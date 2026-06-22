@@ -1,9 +1,1 @@
 /database/__pycache__
-/models/__pycache__
-/services/__pycache__
-/repositories/__pycache__
-/database/immujer.db
-/integrations/whatsapp-server/node_modules
-/integrations/whatsapp-server/sessions
-/integrations/whatsapp-server/nodemon.json
-/integrations/whatsapp-server/package-lock.json
