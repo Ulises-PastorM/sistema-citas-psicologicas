@@ -118,7 +118,8 @@ def service_obtener_citas_usuarias():
                 c.fecha,
                 u[1],
                 c.hora,
-                estatus
+                estatus,
+                c.id_cita
             ])
         return citas_usuarias
     except Exception as e:

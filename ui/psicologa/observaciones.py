@@ -1,6 +1,11 @@
 import customtkinter as ctk
 from services.citas_services import service_obtener_citas_usuarias
-
+from models.sesion_model import Sesion
+from services.sesiones_services import (
+    service_obtener_sesiones_por_cita,
+    service_crear_sesion,
+    service_actualizar_sesion
+)
 class ObservacionesView(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
@@ -49,10 +54,16 @@ class ObservacionesView(ctk.CTkFrame):
                     lbl_dato = ctk.CTkLabel(row_frame, text=fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
                     lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
                 
-                btn_editar = ctk.CTkButton(row_frame, text="Editar Observaciones", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, command=lambda n=fila[0]: self.abrir_modal(n))
+                btn_editar = ctk.CTkButton(row_frame, text="Editar Observaciones", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, command=lambda f=fila: self.abrir_modal(f))
                 btn_editar.grid(row=0, column=5, pady=8)
             
-    def abrir_modal(self, nombre_usuaria):
+    def abrir_modal(self, fila):
+        nombre_usuaria = fila[0]
+        fecha_cita = fila[1]
+        cita_id = fila[5] 
+        sesiones_existentes = service_obtener_sesiones_por_cita(cita_id)
+        sesion_actual = sesiones_existentes[0] if sesiones_existentes else None
+
         modal = ctk.CTkToplevel(self)
         modal.geometry("450x300")
         
@@ -72,7 +83,7 @@ class ObservacionesView(ctk.CTkFrame):
         header.pack(fill="x", padx=1, pady=1)
         header.pack_propagate(False)
 
-        lbl_modal_title = ctk.CTkLabel(header, text="Agregar observaciones", font=("Arial", 16, "bold", "italic"), text_color="white")
+        lbl_modal_title = ctk.CTkLabel(header, text="Observaciones", font=("Arial", 16, "bold", "italic"), text_color="white")
         lbl_modal_title.pack(side="left", padx=15)
 
         btn_close = ctk.CTkButton(header, text="X", font=("Arial", 18, "bold"), text_color="white", fg_color="transparent", hover_color="#E55A2B", width=30, command=modal.destroy)
@@ -87,6 +98,9 @@ class ObservacionesView(ctk.CTkFrame):
         self.txt_obs = ctk.CTkTextbox(content, fg_color="white", text_color="black", border_width=1, border_color="#D3D3D3", height=100)
         self.txt_obs.pack(fill="x", pady=(0, 15))
 
+        if sesion_actual and sesion_actual.observaciones:
+            self.txt_obs.insert("0.0", sesion_actual.observaciones)
+
         footer_frame = ctk.CTkFrame(content, fg_color="transparent")
         footer_frame.pack(fill="x", pady=(5, 0))
 
@@ -94,12 +108,21 @@ class ObservacionesView(ctk.CTkFrame):
         lbl_mensaje.pack(side="left")
 
         def guardar_observaciones():
-            lbl_mensaje.configure(text="✅ Datos modificados exitosamente", text_color="#32CD32")
+            texto_observaciones = self.txt_obs.get("0.0", "end").strip()
             
-            btn_guardar.configure(state="disabled")
-            
-            self.after(1500, modal.destroy)
+            if sesion_actual:
+                sesion_actual.observaciones = texto_observaciones
+                resultado = service_actualizar_sesion(sesion_actual)
+            else:
+                nueva_sesion = Sesion(cita_id=cita_id, fecha_sesion=fecha_cita, observaciones=texto_observaciones)
+                resultado = service_crear_sesion(nueva_sesion)
+
+            if resultado.get("success"):
+                lbl_mensaje.configure(text="✅ Datos guardados", text_color="#32CD32")
+                btn_guardar.configure(state="disabled")
+                self.after(1500, modal.destroy)
+            else:
+                lbl_mensaje.configure(text=f"Error: {resultado.get('error')}", text_color="red")
 
         btn_guardar = ctk.CTkButton(footer_frame, text="Guardar", fg_color="#005A43", hover_color="#004030", text_color="white", font=("Arial", 14, "bold", "italic"), corner_radius=8, height=35, command=guardar_observaciones)
         btn_guardar.pack(side="right")
-        
