@@ -156,3 +156,18 @@ def eliminar_usuaria(id_usuaria):
     conn.close()
 
     return cursor.rowcount  # indica si se eliminó algún registro
+
+def obtener_usuaria_basico(id_usuaria):
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT nombre, telefono FROM usuarias WHERE id_usuaria = ?",
+        (id_usuaria,)
+    )
+
+    resultado = cursor.fetchone()
+    conn.close()
+
+    return resultado if resultado else None

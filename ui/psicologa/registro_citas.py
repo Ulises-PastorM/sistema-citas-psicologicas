@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from services.citas_services import service_obtener_citas_usuarias
 
 class RegistroCitas(ctk.CTkFrame):
     def __init__(self, master):
@@ -21,7 +22,7 @@ class RegistroCitas(ctk.CTkFrame):
         self.tabla_header.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
         self.tabla_header.pack_propagate(False)
         
-        columnas = ["Nombre", "Edad", "Fecha", "Telefono", "Estatus", "Editar"]
+        columnas = ["Nombre", "Fecha", "Telefono", "Hora", "Estatus", "Editar"]
         for i, col in enumerate(columnas):
             lbl = ctk.CTkLabel(self.tabla_header, text=col, text_color="white", font=("Arial", 13, "bold"), anchor="center")
             lbl.grid(row=0, column=i, pady=10, sticky="ew")
@@ -29,32 +30,26 @@ class RegistroCitas(ctk.CTkFrame):
         self.scroll_tabla = ctk.CTkScrollableFrame(self.card_frame, fg_color="transparent", height=160)
         self.scroll_tabla.grid(row=2, column=0, columnspan=2, padx=15, pady=(0, 10), sticky="ew")
 
-        datos_ejemplo = [
-            ("Ana Martinez", "28", "09/Mar/2026", "5550101999", "Activa"),
-            ("Maria Lopez", "34", "15/Abr/2026", "5550202888", "Pendiente"),
-            ("Juana Perez", "42", "20/May/2026", "5550303777", "Completada"),
-            ("Laura Gomez", "25", "22/May/2026", "5550404666", "Activa"),
-            ("Carmen Ruiz", "50", "01/Jun/2026", "5550505555", "Pendiente"),
-            ("Rosa Sanchez", "31", "10/Jun/2026", "5550606444", "Activa")
-        ]
+        datos_ejemplo = service_obtener_citas_usuarias()
 
         # Llenado de la tabla
         for fila in datos_ejemplo:
-            row_frame = ctk.CTkFrame(self.scroll_tabla, fg_color="white", border_width=1, border_color="#E0E0E0", corner_radius=6, height=40)
-            row_frame.pack(fill="x", pady=3, padx=5)
-            row_frame.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
-            row_frame.grid_propagate(False)
+            if fila[4] == "Activa":
+                row_frame = ctk.CTkFrame(self.scroll_tabla, fg_color="white", border_width=1, border_color="#E0E0E0", corner_radius=6, height=40)
+                row_frame.pack(fill="x", pady=3, padx=5)
+                row_frame.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
+                row_frame.grid_propagate(False)
 
-            for i in range(5):
-                color_texto = "#32CD32" if fila[4] == "Activa" and i == 4 else "black"
-                lbl_dato = ctk.CTkLabel(row_frame, text=fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
-                lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
-            
-            # AGREGAMOS EL COMMAND AL BOTÓN EDITAR
-            # Usamos lambda f=fila para asegurarnos de pasar los datos correctos de esta fila en específico
-            btn_editar = ctk.CTkButton(row_frame, text="Editar ✏️", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, 
-                                       command=lambda f=fila: self.abrir_modal_editar(f))
-            btn_editar.grid(row=0, column=5, pady=8)
+                for i in range(5):
+                    color_texto = "#32CD32" if fila[4] == "Activa" and i == 4 else "black"
+                    lbl_dato = ctk.CTkLabel(row_frame, text=fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
+                    lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
+                
+                # AGREGAMOS EL COMMAND AL BOTÓN EDITAR
+                # Usamos lambda f=fila para asegurarnos de pasar los datos correctos de esta fila en específico
+                btn_editar = ctk.CTkButton(row_frame, text="Editar ✏️", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, 
+                                        command=lambda f=fila: self.abrir_modal_editar(f))
+                btn_editar.grid(row=0, column=5, pady=8)
 
         self.lbl_subtitulo2 = ctk.CTkLabel(self.card_frame, text="Registrar Nueva Cita", font=("Arial", 16, "bold", "italic"), text_color="#006B4D")
         self.lbl_subtitulo2.grid(row=3, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="w")

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS citas (
 	"id_cita"	INTEGER,
 	"fecha"	TEXT NOT NULL,
 	"hora"	TEXT,
-	"estado"	TEXT,
+	"estado_id"	TEXT,
 	"usuaria_id"	INTEGER NOT NULL,
 	"psicologa_id"	INTEGER NOT NULL,
 	PRIMARY KEY("id_cita" AUTOINCREMENT)
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS usuarias_direcciones (
 		REFERENCES usuarias("id_usuaria"),
 	FOREIGN KEY ("direccion_id")
 		REFERENCES direcciones("id_direccion")
-)
+);
 
 CREATE TABLE IF NOT EXISTS escolaridades (
 	"id_escolaridad"	INTEGER,
@@ -148,6 +148,11 @@ CREATE TABLE IF NOT EXISTS usuarias (
 		REFERENCES estatus("id_estatus")
 );
 
+CREATE TABLE IF NOT EXISTS estados_cita (
+    id_estado_cita INTEGER PRIMARY KEY AUTOINCREMENT,
+    estado_cita TEXT NOT NULL UNIQUE
+);
+
 
 -- CATÁLOGOS
 
@@ -201,3 +206,23 @@ INSERT OR IGNORE INTO estatus (estatus) VALUES
 -- direcciones
 INSERT OR IGNORE INTO direcciones (calle_numero, colonia, municipio, domicilio_estatus_id) VALUES
 ('Los Andes 25', 'Centro', 'Huajuapan de León', 1);
+
+INSERT OR IGNORE INTO estados_cita (estado_cita) VALUES
+('Programada'),
+('Confirmada'),
+('Atendida'),
+('Cancelada'),
+('No asistió');
+
+INSERT OR IGNORE INTO citas (
+    fecha,
+    hora,
+    estado_id,
+    usuaria_id,
+    psicologa_id
+) VALUES
+('2026-07-22', '09:00', 1, 1, 1),
+('2026-07-22', '10:30', 2, 2, 1),
+('2026-07-22', '12:00', 1, 3, 1),
+('2026-07-23', '09:30', 1, 1, 1),
+('2026-07-23', '11:00', 1, 2, 1);

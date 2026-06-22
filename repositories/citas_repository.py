@@ -9,9 +9,9 @@ def crear_cita(cita: Cita) -> int:
 
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO citas (fecha, hora, estado, usuaria_id, psicologa_id)
+        INSERT INTO citas (fecha, hora, estado_id, usuaria_id, psicologa_id)
         VALUES (?, ?, ?, ?, ?)
-    """, (cita.fecha, cita.hora, cita.estado, cita.usuaria_id, cita.psicologa_id))
+    """, (cita.fecha, cita.hora, cita.estado_id, cita.usuaria_id, cita.psicologa_id))
 
     conn.commit()
     nuevo_id = cursor.lastrowid
@@ -91,9 +91,9 @@ def actualizar_cita(cita: Cita) -> int:
     cursor = conn.cursor()
     cursor.execute("""
         UPDATE citas
-        SET fecha = ?, hora = ?, estado = ?, usuaria_id = ?, psicologa_id = ?
+        SET fecha = ?, hora = ?, estado_id = ?, usuaria_id = ?, psicologa_id = ?
         WHERE id_cita = ?
-    """, (cita.fecha, cita.hora, cita.estado, cita.usuaria_id, cita.psicologa_id, cita.id_cita))
+    """, (cita.fecha, cita.hora, cita.estado_id, cita.usuaria_id, cita.psicologa_id, cita.id_cita))
 
     conn.commit()
     filas = cursor.rowcount

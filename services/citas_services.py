@@ -8,6 +8,7 @@ from repositories.citas_repository import (
     actualizar_cita,
     eliminar_cita,
 )
+from services.usuarias_services import service_obtener_usuaria_basico
 
 ESTADOS_VALIDOS = {"pendiente", "confirmada", "cancelada", "completada"}
 
@@ -105,3 +106,27 @@ def service_eliminar_cita(id_cita: int) -> dict:
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": f"Error al eliminar la cita: {str(e)}"}
+    
+def service_obtener_citas_usuarias():
+    try:
+        citas = obtener_citas()
+        citas_usuarias = []
+        for c in citas:
+            u = service_obtener_usuaria_basico(c.usuaria_id)
+            if c.estado_id == '1':
+                estatus = "Activa"
+            elif c.estado_id == '2':
+                estatus = "Completada"
+            elif c.estado_id == '3':
+                estatus = "Cancelada"
+            citas_usuarias.append([
+                u[0],
+                c.fecha,
+                u[1],
+                c.hora,
+                estatus
+            ])
+        return citas_usuarias
+    except Exception as e:
+        print(f"[citas_service] Error al obtener citas: {e}")
+        return []

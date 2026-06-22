@@ -5,6 +5,7 @@ from repositories.usuarias_repository import (
     obtener_usuaria_por_id,
     actualizar_usuaria,
     eliminar_usuaria,
+    obtener_usuaria_basico,
 )
 
 
@@ -126,3 +127,20 @@ def service_eliminar_usuaria(id_usuaria) -> dict:
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": f"Error al eliminar la usuaria: {str(e)}"}
+
+# Obtener usuaria por id
+def service_obtener_usuaria_basico(id_usuaria):
+    """
+    Busca una usuaria por su ID.
+
+    Returns:
+        Dict con los datos de la usuaria, o None si no existe.
+    """
+    if not id_usuaria:
+        return None
+
+    try:
+        return obtener_usuaria_basico(id_usuaria)
+    except Exception as e:
+        print(f"[usuarias_service] Error al obtener usuaria {id_usuaria}: {e}")
+        return None

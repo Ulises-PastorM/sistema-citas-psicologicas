@@ -8,7 +8,7 @@ class Cita:
     usuaria_id:   int
     psicologa_id: int
     hora:         Optional[str] = field(default=None)   # Formato: "HH:MM"
-    estado:       Optional[str] = field(default="pendiente")
+    estado_id:       Optional[int] = field(default=1)
     id_cita:      Optional[int] = field(default=None)
 
     def to_dict(self) -> dict:
@@ -16,7 +16,7 @@ class Cita:
             "id_cita":      self.id_cita,
             "fecha":        self.fecha,
             "hora":         self.hora,
-            "estado":       self.estado,
+            "estado_id":       self.estado_id,
             "usuaria_id":   self.usuaria_id,
             "psicologa_id": self.psicologa_id,
         }
@@ -27,10 +27,7 @@ class Cita:
             id_cita      = data.get("id_cita"),
             fecha        = data.get("fecha", ""),
             hora         = data.get("hora"),
-            estado       = data.get("estado", "pendiente"),
+            estado_id       = data.get("estado_id", 1),
             usuaria_id   = data.get("usuaria_id", 0),
             psicologa_id = data.get("psicologa_id", 0),
         )
-
-    def __str__(self) -> str:
-        return f"Cita(id={self.id_cita}, fecha='{self.fecha}', hora='{self.hora}', estado='{self.estado}')"
