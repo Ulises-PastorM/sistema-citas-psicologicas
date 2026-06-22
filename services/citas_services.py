@@ -10,7 +10,7 @@ from repositories.citas_repository import (
 )
 from services.usuarias_services import service_obtener_usuaria_basico
 
-ESTADOS_VALIDOS = {"pendiente", "confirmada", "cancelada", "completada"}
+#ESTADOS_VALIDOS = {"pendiente", "confirmada", "cancelada", "completada"}
 
 
 def service_crear_cita(cita: Cita) -> dict:
@@ -22,9 +22,6 @@ def service_crear_cita(cita: Cita) -> dict:
 
     if not cita.psicologa_id:
         return {"success": False, "error": "La psicóloga es obligatoria."}
-
-    if cita.estado and cita.estado not in ESTADOS_VALIDOS:
-        return {"success": False, "error": f"Estado inválido. Usa uno de: {', '.join(ESTADOS_VALIDOS)}."}
 
     try:
         nuevo_id = crear_cita(cita)
@@ -74,9 +71,6 @@ def service_obtener_citas_por_psicologa(psicologa_id: int) -> list[Cita]:
 def service_actualizar_cita(cita: Cita) -> dict:
     if not cita.id_cita:
         return {"success": False, "error": "El ID de la cita es requerido."}
-
-    if cita.estado and cita.estado not in ESTADOS_VALIDOS:
-        return {"success": False, "error": f"Estado inválido. Usa uno de: {', '.join(ESTADOS_VALIDOS)}."}
 
     existente = obtener_cita_por_id(cita.id_cita)
     if not existente:

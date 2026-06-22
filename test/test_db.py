@@ -5,8 +5,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from services.usuarias_services import service_crear_usuaria, service_obtener_usuarias
 from services.psicologas_services import service_crear_psicologa, service_obtener_psicologas
+from services.citas_services import service_crear_cita
+from services.sesiones_services import service_crear_sesion
 from models.usuaria_model import Usuaria
 from models.psicologa_model import Psicologa
+from models.cita_model import Cita
+from models.sesion_model import Sesion
 
 for i in range(1, 5):
     nueva_usuaria = Usuaria(
@@ -43,12 +47,34 @@ for i in range(1, 2):
     resultado = service_crear_psicologa(nueva_psicologa)
     print(resultado)
 
-#print(nueva_usuaria)
+citas = [
+    ('2026-07-22', '09:00', 1, 1, 1),
+    ('2026-07-22', '10:30', 2, 2, 1),
+    ('2026-07-22', '12:00', 1, 3, 1),
+    ('2026-07-23', '09:30', 1, 1, 1),
+    ('2026-07-23', '11:00', 1, 2, 1)
+]
 
+for i in citas:
+    nueva_cita = Cita(
+        fecha=i[0],
+        hora=i[1],
+        estado_id=i[2],
+        usuaria_id=i[3],
+        psicologa_id=i[4],
+    )
+    resultado = service_crear_cita(nueva_cita)
+    print(resultado)
 
+for i in range(4):
+    nueva_sesion = Sesion(
+        cita_id=i+1,
+        fecha_sesion="2026-09-02",
+        observaciones="Sufre violencia por parte de su esposo. La paciente cuenta con problemas de autoestima.",
+    )
+    resultado = service_crear_sesion(nueva_sesion)
+    print(resultado)
 
-#crear_usuaria("María López", "25/03/2026", "Centro", 29, "9531234567", 3, 1)
-#
 usuarias = service_obtener_usuarias()
 
 for u in usuarias:

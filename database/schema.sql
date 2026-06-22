@@ -213,16 +213,3 @@ INSERT OR IGNORE INTO estados_cita (estado_cita) VALUES
 ('Atendida'),
 ('Cancelada'),
 ('No asistió');
-
-INSERT OR IGNORE INTO citas (
-    fecha,
-    hora,
-    estado_id,
-    usuaria_id,
-    psicologa_id
-) VALUES
-('2026-07-22', '09:00', 1, 1, 1),
-('2026-07-22', '10:30', 2, 2, 1),
-('2026-07-22', '12:00', 1, 3, 1),
-('2026-07-23', '09:30', 1, 1, 1),
-('2026-07-23', '11:00', 1, 2, 1);
