@@ -26,19 +26,14 @@ def enviar_mensaje_a_usuaria(usuaria: Usuaria, mensaje: str) -> dict:
     Returns:
         Diccionario con el resultado de la operación.
     """
-    #nombre   = usuaria.get("nombre", "")
-    #telefono = usuaria.get("telefono", "")
 
     if not usuaria.telefono:
         return {"success": False, "error": f"La usuaria '{usuaria.nombre}' no tiene teléfono registrado."}
 
-    # Construcción del mensaje con el nombre de la usuaria.
-    mensaje_final = "Hola " + usuaria.nombre + "! " + mensaje
-
     try:
         response = requests.post(
             f"{WHATSAPP_SERVER_URL}/send-message",
-            json={"phone": usuaria.telefono_limpio(), "message": mensaje_final},
+            json={"phone": usuaria.telefono_limpio(), "message": mensaje},
             timeout=15,
         )
         data = response.json()
