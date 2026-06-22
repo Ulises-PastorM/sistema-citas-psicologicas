@@ -1,6 +1,9 @@
 import customtkinter as ctk
 import calendar
 from datetime import date, timedelta
+from services.citas_services import service_obtener_citas_usuarias
+from datetime import date, timedelta, datetime
+
 
 class CalendarioView(ctk.CTkFrame):
     def __init__(self, master):
@@ -8,23 +11,15 @@ class CalendarioView(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.anio_actual = 2026
-        self.mes_actual = 3
-        self.fecha_seleccionada = date(2026, 3, 9) 
+        hoy = date.today()
+        self.anio_actual = hoy.year
+        self.mes_actual = hoy.month
+        self.fecha_seleccionada = hoy 
         self.filtro_actual = "Mes" 
 
         self.meses_nombres = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 
-        self.db_citas = {
-            date(2026, 3, 9): [{"hora": "16:00", "nombre": "Ana Martinez", "color": "#7A1B6C"}],
-            date(2026, 3, 18): [{"hora": "10:00", "nombre": "Ana Martinez", "color": "#FF6B35"}],
-            date(2026, 3, 19): [{"hora": "12:00", "nombre": "Ana Martinez", "color": "#32CD32"}],
-            date(2026, 3, 22): [{"hora": "16:00", "nombre": "Ulises Martinez", "color": "#FF6B35"}],
-            date(2026, 3, 25): [{"hora": "16:00", "nombre": "Ana Martinez", "color": "#7A1B6C"}],
-            date(2026, 3, 30): [{"hora": "16:00", "nombre": "Ana Martinez", "color": "#FF6B35"}],
-            date(2026, 4, 15): [{"hora": "11:00", "nombre": "Maria Lopez", "color": "#7A1B6C"}],
-            date(2026, 4, 16): [{"hora": "11:00", "nombre": "Leonardo", "color": "#32CD32"}],
-        }
+        self.cargar_citas()
 
         self.lbl_titulo = ctk.CTkLabel(self, text="Calendario de Citas", font=("Arial", 22, "bold", "italic"), text_color="#006B4D")
         self.lbl_titulo.grid(row=0, column=0, pady=(0, 15), sticky="w")
@@ -186,7 +181,8 @@ class CalendarioView(ctk.CTkFrame):
 
             if mostrar:
                 for cita in lista_citas:
-                    citas_a_mostrar.append((fecha_cita, cita))
+                    if cita["estatus"] != "Cancelada":
+                        citas_a_mostrar.append((fecha_cita, cita))
 
         citas_a_mostrar.sort(key=lambda x: x[0])
 
@@ -197,9 +193,9 @@ class CalendarioView(ctk.CTkFrame):
         for fecha_cita, cita in citas_a_mostrar:
             dia_str = str(fecha_cita.day)
             mes_str = self.meses_nombres[fecha_cita.month][:3] 
-            self.crear_tarjeta_cita(self.scroll_citas, dia_str, mes_str, cita["hora"], cita["nombre"], cita["color"])
+            self.crear_tarjeta_cita(self.scroll_citas, dia_str, mes_str, cita["hora"], cita["nombre"], cita["color"], cita["estatus"])
 
-    def crear_tarjeta_cita(self, master, dia, mes, hora, nombre, color_borde):
+    def crear_tarjeta_cita(self, master, dia, mes, hora, nombre, color_borde, estatus):
         card = ctk.CTkFrame(master, fg_color="white", border_width=2, border_color="#B4B4B4", corner_radius=8, height=60)
         card.pack(fill="x", padx=(5, 30), pady=5)
         card.pack_propagate(False) 
@@ -220,7 +216,43 @@ class CalendarioView(ctk.CTkFrame):
         top_info.pack(fill="x", pady=(8, 0))
         ctk.CTkLabel(top_info, text=f"🕒 {hora}", font=("Arial", 11), text_color="gray", height=15).pack(side="left")
         
-        badge = ctk.CTkLabel(top_info, text=" Activa ", fg_color="#32CD32", text_color="white", font=("Arial", 10, "bold"), corner_radius=10, height=18)
+        badge = ctk.CTkLabel(top_info, text=f" {estatus} ", fg_color=color_borde, text_color="white", font=("Arial", 10, "bold"), corner_radius=10, height=18)
         badge.pack(side="right") 
 
         ctk.CTkLabel(info_frame, text=nombre, font=("Arial", 13, "bold"), text_color="black", height=20).pack(side="left", anchor="w", pady=(2, 0))
+        
+    def cargar_citas(self):
+        self.db_citas = {}
+        citas_raw = service_obtener_citas_usuarias()
+
+        colores = {
+            "Activa": "#32CD32",       
+            "Completada": "#7A1B6C",   
+            "Cancelada": "#FF6B35"     
+        }
+
+        for cita in citas_raw:
+            nombre = cita[0]
+            fecha_str = cita[1]
+            hora = cita[3]
+            estatus = cita[4]
+            
+            if estatus == "Cancelada":
+                continue
+
+            try:
+                fecha_obj = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+            except ValueError:
+                continue 
+
+            cita_dict = {
+                "hora": hora,
+                "nombre": nombre,
+                "color": colores.get(estatus, "#B4B4B4"), 
+                "estatus": estatus
+            }
+
+            if fecha_obj not in self.db_citas:
+                self.db_citas[fecha_obj] = []
+            
+            self.db_citas[fecha_obj].append(cita_dict)
