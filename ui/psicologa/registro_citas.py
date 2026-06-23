@@ -101,7 +101,7 @@ class RegistroCitas(ctk.CTkFrame):
         self.btn_registrar.grid(row=7, column=1, padx=20, pady=(10, 30), sticky="e")
 
     def abrir_modal_editar(self, datos_fila):
-        nombre, edad, fecha, telefono, estatus = datos_fila
+        nombre, fecha, telefono, hora, estatus, id_cita = datos_fila
 
         modal = ctk.CTkToplevel(self)
         modal.title("Editar Cita")
@@ -115,21 +115,24 @@ class RegistroCitas(ctk.CTkFrame):
 
         entry_style = {"fg_color": "white", "text_color": "black", "border_width": 1, "border_color": "#D3D3D3", "corner_radius": 6, "height": 35}
 
-        def crear_input_modal(texto, valor_inicial):
+        def crear_input_modal(texto, valor_inicial, editable=True):
             ctk.CTkLabel(modal, text=texto, font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40)
             ent = ctk.CTkEntry(modal, **entry_style)
             ent.insert(0, valor_inicial) 
+            
+            if not editable:
+                ent.configure(state="disabled", fg_color="#EBEBEB", text_color="#7A7A7A")
+                
             ent.pack(fill="x", padx=40, pady=(0, 10))
             return ent
 
-        ent_nombre = crear_input_modal("Nombre:", nombre)
-        ent_edad = crear_input_modal("Edad:", edad)
-        ent_fecha = crear_input_modal("Fecha:", fecha)
-        ent_telefono = crear_input_modal("Teléfono:", telefono)
-
-
+        ent_nombre = crear_input_modal("Nombre:", nombre, editable=False)
+        ent_telefono = crear_input_modal("Teléfono:", telefono, editable=False)
+        ent_fecha = crear_input_modal("Fecha:", fecha, editable=True)
+        ent_hora = crear_input_modal("Hora (HH:MM):", hora, editable=True)
+        
         ctk.CTkLabel(modal, text="Estatus:", font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40)
-        opt_estatus = ctk.CTkOptionMenu(modal, values=["Activa", "Pendiente", "Completada", "Cancelada"], fg_color="white", text_color="black", button_color="#E6E6E6", button_hover_color="#D3D3D3", dropdown_fg_color="white", dropdown_text_color="black", corner_radius=6, height=35)
+        opt_estatus = ctk.CTkOptionMenu(modal, values=["Activa", "Completada", "Cancelada"], fg_color="white", text_color="black", button_color="#E6E6E6", button_hover_color="#D3D3D3", dropdown_fg_color="white", dropdown_text_color="black", corner_radius=6, height=35)
         opt_estatus.set(estatus) 
         opt_estatus.pack(fill="x", padx=40, pady=(0, 10))
 
@@ -139,7 +142,6 @@ class RegistroCitas(ctk.CTkFrame):
         def guardar_modificacion():
 
             lbl_mensaje.configure(text="✅ Datos modificados exitosamente", text_color="#32CD32")
-            
             self.after(1500, modal.destroy)
 
         btn_guardar = ctk.CTkButton(modal, text="Aceptar modificación", command=guardar_modificacion, fg_color="#FF6B35", hover_color="#E55B2B", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=40)
