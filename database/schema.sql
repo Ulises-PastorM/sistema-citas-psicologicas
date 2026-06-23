@@ -203,13 +203,15 @@ INSERT OR IGNORE INTO estatus (estatus) VALUES
 ('Activa'),
 ('Inactiva');
 
--- direcciones
-INSERT OR IGNORE INTO direcciones (calle_numero, colonia, municipio, domicilio_estatus_id) VALUES
-('Los Andes 25', 'Centro', 'Huajuapan de León', 1);
-
+-- estados cita
 INSERT OR IGNORE INTO estados_cita (estado_cita) VALUES
 ('Programada'),
 ('Confirmada'),
 ('Atendida'),
 ('Cancelada'),
 ('No asistió');
+
+-- roles
+INSERT OR IGNORE INTO roles (rol) VALUES
+('Administrador'),
+('Psicologa');
