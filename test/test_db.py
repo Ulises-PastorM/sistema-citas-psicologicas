@@ -7,11 +7,14 @@ from services.usuarias_services import service_crear_usuaria, service_obtener_us
 from services.psicologas_services import service_crear_psicologa, service_obtener_psicologas
 from services.citas_services import service_crear_cita
 from services.sesiones_services import service_crear_sesion
+from services.usuarios_sistema_services import service_crear_usuario
+from services.sesiones_services import service_crear_sesion
 from models.usuaria_model import Usuaria
 from models.psicologa_model import Psicologa
 from models.cita_model import Cita
 from models.sesion_model import Sesion
 
+# Agrega 5 usuarias
 for i in range(1, 5):
     nueva_usuaria = Usuaria(
         nombre="María Fernanda López",
@@ -37,6 +40,7 @@ for i in range(1, 5):
     resultado = service_crear_usuaria(nueva_usuaria)
     print(resultado)
 
+# Agrega 1 psicologa
 for i in range(1, 2):
     nueva_psicologa = Psicologa(
         nombre="María Fernanda López",
@@ -47,6 +51,7 @@ for i in range(1, 2):
     resultado = service_crear_psicologa(nueva_psicologa)
     print(resultado)
 
+# Agrega 5 citas
 citas = [
     ('2026-07-22', '09:00', 1, 1, 1),
     ('2026-07-22', '10:30', 2, 2, 1),
@@ -66,6 +71,7 @@ for i in citas:
     resultado = service_crear_cita(nueva_cita)
     print(resultado)
 
+# Agrega 4 sesiones
 for i in range(4):
     nueva_sesion = Sesion(
         cita_id=i+1,
@@ -75,7 +81,16 @@ for i in range(4):
     resultado = service_crear_sesion(nueva_sesion)
     print(resultado)
 
-usuarias = service_obtener_usuarias()
+# Ingresa un usuario admin
+resultado = service_crear_usuario("admin", "123456", 1)
+print(resultado)
 
-for u in usuarias:
-    print(u)
+if resultado["success"]:
+    print("Nuevo usuario agregado!")
+
+# Ingresa una psicologa
+resultado = service_crear_usuario("Nayeli", "654321", 2)
+print(resultado)
+
+if resultado["success"]:
+    print("Nuevo usuario agregado!")

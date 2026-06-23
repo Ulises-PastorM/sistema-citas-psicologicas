@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
+from services.usuarios_sistema_services import service_login
 
 class LoginView(ctk.CTkFrame):
     def __init__(self, master, comando_login):
@@ -75,7 +76,7 @@ class LoginView(ctk.CTkFrame):
         user = self.ent_usuario.get()
         pwd = self.ent_password.get()
         
-        if user == "admin" and pwd == "123":
+        if service_login(user, pwd)["success"]:
             self.comando_login() 
         else:
             self.lbl_error.configure(text="Usuario o contraseña incorrectos")
