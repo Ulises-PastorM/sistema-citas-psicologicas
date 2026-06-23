@@ -1,4 +1,10 @@
 import customtkinter as ctk
+from tkinter import messagebox
+from datetime import datetime
+from models.usuaria_model import Usuaria
+from models.direccion_model import Direccion
+from services.usuarias_services import service_crear_usuaria
+from services.direcciones_services import service_crear_direccion
 
 class RegistroUsuariaView(ctk.CTkFrame):
     def __init__(self, master):
@@ -256,13 +262,17 @@ class RegistroUsuariaView(ctk.CTkFrame):
     def abrir_modal_domicilio(self):
         modal = ctk.CTkToplevel(self)
         modal.title("Detalles del Domicilio")
-        modal.geometry("400x350")
+        modal.geometry("400x450")
         modal.resizable(False, False)
         
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
         ctk.CTkLabel(modal, text="🏠 Dirección y Estatus", font=("Arial", 16, "bold"), text_color="#006B4D").pack(pady=(20, 15))
+
+        ctk.CTkLabel(modal, text="Calle y Número:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", padx=30)
+        ent_calle = ctk.CTkEntry(modal, **self.entry_style)
+        ent_calle.pack(fill="x", padx=30, pady=(0, 15))
 
         ctk.CTkLabel(modal, text="Colonia ó Agencia:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", padx=30)
         ent_colonia = ctk.CTkEntry(modal, **self.entry_style)
@@ -277,15 +287,20 @@ class RegistroUsuariaView(ctk.CTkFrame):
         opt_estatus.pack(fill="x", padx=30, pady=(0, 25))
 
         if self.datos_domicilio:
+            ent_calle.insert(0, self.datos_domicilio.get("calle_numero", ""))
             ent_colonia.insert(0, self.datos_domicilio.get("colonia", ""))
             ent_municipio.insert(0, self.datos_domicilio.get("municipio", ""))
             opt_estatus.set(self.datos_domicilio.get("estatus", "Propio"))
 
         def guardar_datos():
+            estatus_map = {"Propio": 1, "Rentado": 2, "Prestado": 3}
+            
             self.datos_domicilio = {
+                "calle_numero": ent_calle.get(),
                 "colonia": ent_colonia.get(),
                 "municipio": ent_municipio.get(),
-                "estatus": opt_estatus.get()
+                "estatus": opt_estatus.get(),
+                "estatus_id": estatus_map.get(opt_estatus.get(), 1)
             }
             self.btn_domicilio.configure(text=" ✅ Domicilio guardado", text_color="black", border_color="#32CD32", border_width=2)
             modal.destroy()
@@ -385,9 +400,148 @@ class RegistroUsuariaView(ctk.CTkFrame):
         
         f_eda, self.ent_edad_agresor = self.crear_campo_entrada(self.page3, "Edad:", ancho=100, validacion=self.vcmd_numeros)
         f_eda.grid(row=3, column=0, sticky="w", pady=(0, 12))
-
+        
         btn_prev = ctk.CTkButton(self.page3, text="🡨", command=lambda: self.mostrar_pagina(self.page2), **self.btn_nav_style)
         btn_prev.grid(row=4, column=0, sticky="w", pady=(20, 0))
-        
-        btn_submit = ctk.CTkButton(self.page3, text="+ Registrar Usuaria", fg_color="#FF6B35", text_color="white", font=("Arial", 15, "bold"), height=35, corner_radius=8)
+
+        btn_submit = ctk.CTkButton(self.page3, text="+ Registrar Usuaria", fg_color="#FF6B35", text_color="white", font=("Arial", 15, "bold"), height=35, corner_radius=8, command=self.guardar_registro)
         btn_submit.grid(row=4, column=1, sticky="e", pady=(20, 0))
+        
+        
+    def guardar_registro(self):
+            dia = self.opt_dia.get()
+            mes = self.opt_mes.get()
+            anio = self.opt_ano.get()
+            
+            if dia == "Día" or mes == "Mes" or anio == "Año":
+                messagebox.showwarning("Faltan datos", "Por favor, seleccione una fecha de nacimiento válida.")
+                return
+
+            meses_dict = {"Ene": "01", "Feb": "02", "Mar": "03", "Abr": "04", "May": "05", "Jun": "06", "Jul": "07", "Ago": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dic": "12"}
+            fecha_nac_str = f"{anio}-{meses_dict[mes]}-{dia}"
+            
+            try:
+                f_nac = datetime.strptime(fecha_nac_str, "%Y-%m-%d")
+                hoy = datetime.today()
+                edad_calculada = hoy.year - f_nac.year - ((hoy.month, hoy.day) < (f_nac.month, f_nac.day))
+            except ValueError:
+                messagebox.showerror("Error", "La fecha de nacimiento no es válida.")
+                return
+
+            map_escolaridad = {"Primaria": 1, "Secundaria": 2, "Preparatoria": 3, "Universidad": 4}
+            map_sexo = {"Femenino": 1, "Masculino": 2, "Otro": 3}
+            map_lengua = {"Ninguna": 1, "Mixteco": 2, "Otra": 3}
+            map_civil = {"Soltera": 1, "Casada": 2, "Divorciada": 3, "Viuda": 4}
+            
+            hoy_str = datetime.today().strftime("%Y-%m-%d")
+
+            nueva_usuaria = Usuaria(
+                nombre = self.ent_nombre.get(),
+                edad = edad_calculada,
+                telefono = self.ent_telefono.get(),
+                fecha_nacimiento = fecha_nac_str,
+                lugar_nacimiento = self.ent_lugar.get(),
+                escolaridad_id = map_escolaridad.get(self.opt_escolaridad.get(), 1),
+                ocupacion = self.ent_ocupacion.get(),
+                estado_civil_id = map_civil.get(self.opt_civil.get(), 1),
+                sexo_id = map_sexo.get(self.opt_sexo.get(), 1),
+                lengua_indigena_id = map_lengua.get(self.opt_lengua.get(), 1),
+                padecimiento = ", ".join(self.padecimientos_seleccionados),
+                servicio_immujer_id = 1 if self.var_inmujer.get() == "Sí" else 2,
+                servicio_immujer_fecha = hoy_str, 
+                terapia_tiempo = "6 meses", 
+                terapia_lugar = "Centro de Atención IMMUJER",
+                canalizada_por = self.opt_canalizada.get(),
+                red_apoyo = self.ent_red_apoyo.get(),
+                motivo_consulta = self.txt_motivo.get("0.0", "end").strip(),
+                estatus_id = 1 
+            )
+
+            confirmacion = messagebox.askyesno("Confirmar Registro", f"¿Está segura de que desea registrar a {self.ent_nombre.get()}?")
+            
+            if not confirmacion:
+                return
+            
+            res_usuaria = service_crear_usuaria(nueva_usuaria)
+            
+            if not res_usuaria.get("success"):
+                messagebox.showerror("Error al registrar", res_usuaria.get("error"))
+                return
+            
+            id_usuaria_creada = res_usuaria.get("id_usuaria")
+
+            if self.datos_domicilio:
+                nueva_direccion = Direccion(
+                    calle_numero = self.datos_domicilio.get("calle_numero", ""),
+                    colonia = self.datos_domicilio.get("colonia", ""),
+                    municipio = self.datos_domicilio.get("municipio", ""),
+                    domicilio_estatus_id = self.datos_domicilio.get("estatus_id", 1)
+                )
+                res_direccion = service_crear_direccion(nueva_direccion)
+                
+                if res_direccion.get("success"):
+                    id_direccion_creada = res_direccion.get("id_direccion")
+                else:
+                    messagebox.showwarning("Aviso", f"Usuaria creada, pero falló el domicilio: {res_direccion.get('error')}")
+                    return
+
+            messagebox.showinfo("Éxito", "¡Usuaria registrada correctamente!")
+            self.limpiar_formulario()    
+            self.mostrar_pagina(self.page1)
+    def limpiar_formulario(self):
+        self.ent_nombre.delete(0, "end")
+        self.opt_escolaridad.set("Primaria")
+        self.opt_dia.set("Día")
+        self.opt_mes.set("Mes")
+        self.opt_ano.set("Año")
+        
+        self.opt_sexo.set("Femenino")
+        self.ent_sexo_otra.delete(0, "end")
+        self.ent_sexo_otra.pack_forget()
+        
+        self.ent_lugar.delete(0, "end")
+        
+        self.opt_lengua.set("Mixteco") 
+        self.ent_lengua_otra.delete(0, "end")
+        self.ent_lengua_otra.pack_forget()
+        
+        self.ent_ocupacion.delete(0, "end")
+        
+        self.padecimientos_seleccionados = []
+        self.btn_padecimiento.configure(text="📍 Seleccionar padecimientos...", text_color="gray", border_color="#D3D3D3", border_width=1)
+        
+        self.ent_telefono.delete(0, "end")
+        
+        self.datos_domicilio = {}
+        self.btn_domicilio.configure(text="📍 Ingresar Domicilio...", text_color="gray", border_color="#D3D3D3", border_width=1)
+        
+        self.opt_civil.set("Soltera")
+        
+        self.var_inmujer.set("No")
+        self.ent_cuando.delete(0, "end")
+        self.ent_tipo_apoyo.delete(0, "end")
+        
+        self.var_terapia.set("No")
+        self.ent_tiempo.delete(0, "end")
+        self.ent_lugar_terapia.delete(0, "end")
+        
+        self.opt_canalizada.set("Vicefiscalía")
+        self.ent_canalizada_otra.delete(0, "end")
+        self.ent_canalizada_otra.pack_forget()
+        
+        self.ent_red_apoyo.delete(0, "end")
+
+        self.limpiar_entries_hijos(self.page2)
+        
+        self.txt_motivo.delete("0.0", "end")
+        self.ent_agresor.delete(0, "end")
+        self.ent_parentesco.delete(0, "end")
+        self.ent_ocupacion_agresor.delete(0, "end")
+        self.ent_edad_agresor.delete(0, "end")
+
+    def limpiar_entries_hijos(self, parent):
+        for widget in parent.winfo_children():
+            if isinstance(widget, ctk.CTkEntry):
+                widget.delete(0, "end")
+            elif isinstance(widget, ctk.CTkFrame):
+                self.limpiar_entries_hijos(widget)
