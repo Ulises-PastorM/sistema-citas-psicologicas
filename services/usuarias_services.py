@@ -6,6 +6,8 @@ from repositories.usuarias_repository import (
     actualizar_usuaria,
     eliminar_usuaria,
     obtener_usuaria_basico,
+    crear_usuaria_direccion,
+    obtener_usuaria_por_telefono,
 )
 
 
@@ -15,7 +17,7 @@ def service_crear_usuaria(usuaria: Usuaria) -> dict:
     Valida los datos y crea una nueva usuaria.
 
     Returns:
-        { "success": True } o { "success": False, "error": "..." }
+        { "success": True, "id_usuaria": int } o { "success": False, "error": "..." }
     """
     # Validaciones básicas
     if not usuaria.nombre or not usuaria.nombre.strip():
@@ -31,8 +33,8 @@ def service_crear_usuaria(usuaria: Usuaria) -> dict:
         return {"success": False, "error": "El estatus es obligatorio."}
 
     try:
-        crear_usuaria(usuaria)
-        return {"success": True}
+        nuevo_id = crear_usuaria(usuaria)
+        return {"success": True, "id_usuaria": nuevo_id}
     except Exception as e:
         return {"success": False, "error": f"Error al crear la usuaria: {str(e)}"}
 
@@ -144,3 +146,27 @@ def service_obtener_usuaria_basico(id_usuaria):
     except Exception as e:
         print(f"[usuarias_service] Error al obtener usuaria {id_usuaria}: {e}")
         return None
+
+# Obtener usuaria por telefono
+def service_obtener_usuaria_por_telefono(telefono) -> dict | None:
+    """
+    Busca una usuaria por su telefono.
+
+    Returns:
+        Dict con los datos de la usuaria, o None si no existe.
+    """
+    if not telefono:
+        return None
+
+    try:
+        return obtener_usuaria_por_telefono(telefono)
+    except Exception as e:
+        print(f"[usuarias_service] Error al obtener usuaria {telefono}: {e}")
+        return None
+
+def service_crear_usuaria_direccion(usuaria_id, direccion_id):
+    try:
+        crear_usuaria_direccion(usuaria_id, direccion_id)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": f"Error al crear la usuaria: {str(e)}"}

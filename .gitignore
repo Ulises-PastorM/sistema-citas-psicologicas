@@ -3,3 +3,9 @@
 /integrations/whatsapp-server/sessions
 /integrations/whatsapp-server/nodemon.json
 /integrations/whatsapp-server/package-lock.json
+/models/__pycache__
+/repositories/__pycache__
+/ui/__pycache__
+/ui/components/__pycache__
+/ui/login/__pycache__
+/ui/psicologa/__pycache__

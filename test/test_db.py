@@ -14,12 +14,13 @@ from models.psicologa_model import Psicologa
 from models.cita_model import Cita
 from models.sesion_model import Sesion
 
-# Agrega 5 usuarias
-for i in range(1, 5):
+# Agrega 2 usuarias
+nombres = ["Fernanda López", "Daniela Pérez"]
+for i in range(2):
     nueva_usuaria = Usuaria(
-        nombre="María Fernanda López",
-        edad=32,
-        telefono="951123456" + str(i),
+        nombre=nombres[i],
+        edad=25,
+        telefono="953110826" + str(i),
         fecha_nacimiento="1993-04-15",
         lugar_nacimiento="Oaxaca de Juárez, Oaxaca",
         escolaridad_id=5,
@@ -41,9 +42,9 @@ for i in range(1, 5):
     print(resultado)
 
 # Agrega 1 psicologa
-for i in range(1, 2):
+for i in range(1):
     nueva_psicologa = Psicologa(
-        nombre="María Fernanda López",
+        nombre="Nayeli Cabrera",
         especialidad="Violencia",
         horario="10:00-14:00",
         activa=1,
@@ -54,10 +55,8 @@ for i in range(1, 2):
 # Agrega 5 citas
 citas = [
     ('2026-07-22', '09:00', 1, 1, 1),
-    ('2026-07-22', '10:30', 2, 2, 1),
-    ('2026-07-22', '12:00', 1, 3, 1),
-    ('2026-07-23', '09:30', 1, 1, 1),
-    ('2026-07-23', '11:00', 1, 2, 1)
+    ('2026-07-22', '10:30', 1, 2, 1),
+    ('2026-07-22', '12:00', 2, 2, 1),
 ]
 
 for i in citas:
@@ -71,8 +70,8 @@ for i in citas:
     resultado = service_crear_cita(nueva_cita)
     print(resultado)
 
-# Agrega 4 sesiones
-for i in range(4):
+# Agrega 2 sesiones
+for i in range(2):
     nueva_sesion = Sesion(
         cita_id=i+1,
         fecha_sesion="2026-09-02",

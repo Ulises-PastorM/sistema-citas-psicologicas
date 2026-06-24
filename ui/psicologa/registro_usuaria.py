@@ -3,7 +3,7 @@ from tkinter import messagebox
 from datetime import datetime
 from models.usuaria_model import Usuaria
 from models.direccion_model import Direccion
-from services.usuarias_services import service_crear_usuaria
+from services.usuarias_services import service_crear_usuaria, service_crear_usuaria_direccion
 from services.direcciones_services import service_crear_direccion
 
 class RegistroUsuariaView(ctk.CTkFrame):
@@ -128,7 +128,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         f_nom, self.ent_nombre = self.crear_campo_entrada(self.page1, "Nombre completo:")
         f_nom.grid(row=1, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
         
-        f_esc, self.opt_escolaridad = self.crear_campo_opciones(self.page1, "Escolaridad:", ["Primaria", "Secundaria", "Preparatoria", "Universidad"])
+        f_esc, self.opt_escolaridad = self.crear_campo_opciones(self.page1, "Escolaridad:", ["Ninguna", "Primaria", "Secundaria", "Bachillerato", "Licenciatura", "Posgrado"])
         f_esc.grid(row=1, column=1, sticky="ew", padx=(10, 0), pady=(0, 12))
         
         f_fec = ctk.CTkFrame(self.page1, fg_color="transparent")
@@ -170,7 +170,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         f_lug, self.ent_lugar = self.crear_campo_entrada(self.page1, "Lugar de nacimiento:")
         f_lug.grid(row=3, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
         
-        f_len, self.opt_lengua = self.crear_campo_opciones(self.page1, "Lengua indígena:", ["Mixteco", "Ninguna", "Otra"])
+        f_len, self.opt_lengua = self.crear_campo_opciones(self.page1, "Lengua indígena:", ["Ninguna", "Mixteco", "Zapoteco", "Mazateco", "Otra"])
         
         self.ent_lengua_otra = ctk.CTkEntry(f_len, placeholder_text="Especifique cuál...", **self.entry_style)
         
@@ -428,10 +428,10 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 messagebox.showerror("Error", "La fecha de nacimiento no es válida.")
                 return
 
-            map_escolaridad = {"Primaria": 1, "Secundaria": 2, "Preparatoria": 3, "Universidad": 4}
+            map_escolaridad = {"Ninguna": 1, "Primaria": 2, "Secundaria": 3, "Bachillerato": 4, "Licenciatura": 5, "Posgrado": 6}
             map_sexo = {"Femenino": 1, "Masculino": 2, "Otro": 3}
-            map_lengua = {"Ninguna": 1, "Mixteco": 2, "Otra": 3}
-            map_civil = {"Soltera": 1, "Casada": 2, "Divorciada": 3, "Viuda": 4}
+            map_lengua = {"Ninguna": 1, "Mixteco": 2, "Zapoteco": 3, "Mazateco": 4, "Otra": 5}
+            map_civil = {"Soltera": 1, "Casada": 2, "Divorciada": 3, "Viuda": 4, "Union Libre": 5}
             
             hoy_str = datetime.today().strftime("%Y-%m-%d")
 
@@ -481,6 +481,12 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 
                 if res_direccion.get("success"):
                     id_direccion_creada = res_direccion.get("id_direccion")
+                    res_usuaria_direccion = service_crear_usuaria_direccion(id_usuaria_creada, id_direccion_creada)
+                    if res_usuaria_direccion.get("success"):
+                        pass
+                    else:
+                        messagebox.showwarning("Aviso", f"Usuaria creada, pero falló el domicilio: {res_usuaria_direccion.get('error')}")
+                        return
                 else:
                     messagebox.showwarning("Aviso", f"Usuaria creada, pero falló el domicilio: {res_direccion.get('error')}")
                     return
@@ -490,7 +496,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
             self.mostrar_pagina(self.page1)
     def limpiar_formulario(self):
         self.ent_nombre.delete(0, "end")
-        self.opt_escolaridad.set("Primaria")
+        self.opt_escolaridad.set("Ninguna")
         self.opt_dia.set("Día")
         self.opt_mes.set("Mes")
         self.opt_ano.set("Año")
@@ -501,7 +507,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         
         self.ent_lugar.delete(0, "end")
         
-        self.opt_lengua.set("Mixteco") 
+        self.opt_lengua.set("Ninguna") 
         self.ent_lengua_otra.delete(0, "end")
         self.ent_lengua_otra.pack_forget()
         

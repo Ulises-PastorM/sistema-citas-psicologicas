@@ -1,7 +1,7 @@
 from database.connection import get_connection, enable_foreign_keys
 from models.usuaria_model import Usuaria
 
-def crear_usuaria(usuaria: Usuaria):
+def crear_usuaria(usuaria: Usuaria) -> int:
     conn = get_connection()
     enable_foreign_keys(conn)
 
@@ -54,7 +54,10 @@ def crear_usuaria(usuaria: Usuaria):
         usuaria.estatus_id
     ))
     conn.commit()
+    nuevo_id = cursor.lastrowid
     conn.close()
+
+    return nuevo_id
 
 
 def obtener_usuarias() -> list[Usuaria]:
@@ -171,3 +174,31 @@ def obtener_usuaria_basico(id_usuaria):
     conn.close()
 
     return resultado if resultado else None
+
+def obtener_usuaria_por_telefono(telefono) -> Usuaria | None:
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM usuarias WHERE telefono = ?",
+        (telefono,)
+    )
+
+    resultado = cursor.fetchone()
+    conn.close()
+
+    return Usuaria.from_dict(dict(resultado)) if resultado else None
+
+def crear_usuaria_direccion(usuaria_id, direccion_id):
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO usuarias_direcciones (usuaria_id, direccion_id) VALUES (?, ?)",
+        (usuaria_id, direccion_id,)
+    )
+    conn.commit()
+    conn.close()
+

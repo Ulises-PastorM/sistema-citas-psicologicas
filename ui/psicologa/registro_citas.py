@@ -1,5 +1,11 @@
 import customtkinter as ctk
-from services.citas_services import service_obtener_citas_usuarias
+from datetime import datetime
+from tkinter import messagebox
+from services.citas_services import service_obtener_citas_usuarias, service_crear_cita, service_actualizar_cita, service_obtener_cita_por_id
+from services.usuarias_services import service_obtener_usuarias, service_obtener_usuaria_por_telefono, service_obtener_usuaria_por_id
+from services.whatsapp_services import enviar_mensaje_a_usuaria, obtener_estado_servidor
+from services.notificaciones_services import service_registrar_envio_whatsapp
+from models.cita_model import Cita
 
 class RegistroCitas(ctk.CTkFrame):
     def __init__(self, master):
@@ -61,7 +67,10 @@ class RegistroCitas(ctk.CTkFrame):
 
         ctk.CTkLabel(self.card_frame, text="Seleccionar Usuaria:", **lbl_kwargs).grid(row=4, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
         
-        lista_usuarias = ["Seleccionar...", "Ana Martinez", "Maria Lopez", "Juana Perez", "Laura Gomez"]
+        usuarias = service_obtener_usuarias()
+        lista_usuarias = []
+        for u in usuarias:
+            lista_usuarias.append(u.nombre + " - " + u.telefono)
         self.opt_usuaria = ctk.CTkOptionMenu(self.card_frame, values=lista_usuarias, **opt_kwargs)
         self.opt_usuaria.grid(row=5, column=0, padx=(20, 10), pady=(2, 10), sticky="ew")
 
@@ -87,7 +96,7 @@ class RegistroCitas(ctk.CTkFrame):
         self.frame_horario = ctk.CTkFrame(self.card_frame, fg_color="transparent")
         self.frame_horario.grid(row=7, column=0, padx=(20, 10), pady=(2, 10), sticky="w")
 
-        self.opt_hora = ctk.CTkOptionMenu(self.frame_horario, values=[str(i).zfill(2) for i in range(1, 21)], width=85, **opt_kwargs)
+        self.opt_hora = ctk.CTkOptionMenu(self.frame_horario, values=[str(i).zfill(2) for i in range(8, 17)], width=85, **opt_kwargs)
         self.opt_hora.set("Hora")
         self.opt_hora.pack(side="left", padx=(0, 5))
 
@@ -97,8 +106,92 @@ class RegistroCitas(ctk.CTkFrame):
         self.opt_minuto.set("Min.")
         self.opt_minuto.pack(side="left", padx=(5, 0))
 
-        self.btn_registrar = ctk.CTkButton(self.card_frame, text="+ Registrar Cita", fg_color="#FF6B35", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=40)
+        self.btn_registrar = ctk.CTkButton(self.card_frame, text="+ Registrar Cita", fg_color="#FF6B35", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=40, command=self.guardar_registro)
         self.btn_registrar.grid(row=7, column=1, padx=20, pady=(10, 30), sticky="e")
+
+    def guardar_registro(self):
+        dia = self.opt_dia.get()
+        mes = self.opt_mes.get()
+        anio = self.opt_ano.get()
+
+        if dia == "Día" or mes == "Mes" or anio == "Año":
+            messagebox.showwarning("Faltan datos", "Por favor, seleccione una fecha válida.")
+            return
+        
+        hora = self.opt_hora.get()
+        min = self.opt_minuto.get()
+
+        if hora == "Hora" or min == "Min.":
+            messagebox.showwarning("Faltan datos", "Por favor, seleccione una hora válida.")
+            return
+        
+        meses_dict = {"Enero": "01", "Febrero": "02", "Marzo": "03", "Abril": "04", "Mayo": "05", "Junio": "06", "Julio": "07", "Agosto": "08", "Septiembre": "09", "Octubre": "10", "Noviembre": "11", "Diciembre": "12"}
+        fecha_cita = f"{anio}-{meses_dict[mes]}-{dia}"
+        hora_cita = f"{hora}:{min}"
+
+        usuaria_telefono = self.opt_usuaria.get()
+        datos_usuaria = usuaria_telefono.split(" - ")
+        usuaria_info = service_obtener_usuaria_por_telefono(datos_usuaria[1])
+
+        nueva_cita = Cita(
+            fecha=fecha_cita,
+            hora=hora_cita,
+            estado_id=1,    #Activa
+            usuaria_id=usuaria_info.id_usuaria,
+            psicologa_id=1, #Se toma del usuario_sistema
+        )
+
+        confirmacion = messagebox.askyesno("Confirmar Cita", f"¿Está segura de que desea agendar una cita para {datos_usuaria[0]}?")
+        
+        if not confirmacion:
+            return
+
+        res_cita = service_crear_cita(nueva_cita)
+        if res_cita["success"]:
+            estado_servidor_whatsapp = obtener_estado_servidor()
+            if estado_servidor_whatsapp["status"] == "connected":
+                cita = service_obtener_cita_por_id(res_cita["id_cita"])
+                usuaria_info = service_obtener_usuaria_por_id(cita.usuaria_id)
+                fecha_texto = self.fecha_a_texto(fecha_str=fecha_cita)
+                msg = "¡Hola, " + usuaria_info.nombre + "!\nTu cita en IMMujer ha sido agendada.\nFecha: " + fecha_texto + "\nHora: " + cita.hora + " hrs.\n¡Te esperamos!"
+                envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, msg)
+                if envio_mensaje["success"]:
+                    service_registrar_envio_whatsapp(cita_id=cita.id_cita, mensaje=msg)
+                else:
+                    messagebox.showwarning("Aviso", f"Cita agendada, pero falló el envío de confirmación por Whatsapp: {envio_mensaje.get('error')}")
+                    self.limpiar_formulario()
+                    return
+            else:
+                messagebox.showwarning("Aviso", f"Cita agendada, pero falló el envío de confirmación por Whatsapp: No se pudo conectar con el servidor de Whatsapp.")
+                self.limpiar_formulario()
+                return
+        else:
+            messagebox.showerror("Error al agendar la cita.", res_cita.get("error"))
+            self.limpiar_formulario()
+            return
+        
+        messagebox.showinfo("Éxito", "¡Cita agendada correctamente!")
+        self.limpiar_formulario()
+
+    def limpiar_formulario(self):
+        self.opt_dia.set("Día")
+        self.opt_mes.set("Mes")
+        self.opt_ano.set("Año")
+        self.opt_hora.set("Hora")
+        self.opt_minuto.set("Min.")
+
+    def fecha_a_texto(self, fecha_str: str) -> str:
+        meses = [
+            "enero", "febrero", "marzo", "abril",
+            "mayo", "junio", "julio", "agosto",
+            "septiembre", "octubre", "noviembre", "diciembre"
+        ]
+
+        try:
+            fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
+            return f"{fecha.day} de {meses[fecha.month - 1]} de {fecha.year}"
+        except ValueError:
+            raise ValueError("La fecha debe tener el formato AAAA-MM-DD")
 
     def abrir_modal_editar(self, datos_fila):
         nombre, fecha, telefono, hora, estatus, id_cita = datos_fila
