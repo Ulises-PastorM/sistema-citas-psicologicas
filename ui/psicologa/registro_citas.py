@@ -8,8 +8,9 @@ from services.notificaciones_services import service_registrar_envio_whatsapp
 from models.cita_model import Cita
 
 class RegistroCitas(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, on_actualizar=None):
         super().__init__(master, fg_color="transparent")
+        self.on_actualizar = on_actualizar
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
@@ -36,26 +37,7 @@ class RegistroCitas(ctk.CTkFrame):
         self.scroll_tabla = ctk.CTkScrollableFrame(self.card_frame, fg_color="transparent", height=160)
         self.scroll_tabla.grid(row=2, column=0, columnspan=2, padx=15, pady=(0, 10), sticky="ew")
 
-        datos_ejemplo = service_obtener_citas_usuarias()
-
-        # Llenado de la tabla
-        for fila in datos_ejemplo:
-            if fila[4] == "Activa":
-                row_frame = ctk.CTkFrame(self.scroll_tabla, fg_color="white", border_width=1, border_color="#E0E0E0", corner_radius=6, height=40)
-                row_frame.pack(fill="x", pady=3, padx=5)
-                row_frame.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
-                row_frame.grid_propagate(False)
-
-                for i in range(5):
-                    color_texto = "#32CD32" if fila[4] == "Activa" and i == 4 else "black"
-                    lbl_dato = ctk.CTkLabel(row_frame, text=fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
-                    lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
-                
-                # AGREGAMOS EL COMMAND AL BOTÓN EDITAR
-                # Usamos lambda f=fila para asegurarnos de pasar los datos correctos de esta fila en específico
-                btn_editar = ctk.CTkButton(row_frame, text="Editar ✏️", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, 
-                                        command=lambda f=fila: self.abrir_modal_editar(f))
-                btn_editar.grid(row=0, column=5, pady=8)
+        self.refrescar_tabla()
 
         self.lbl_subtitulo2 = ctk.CTkLabel(self.card_frame, text="Registrar Nueva Cita", font=("Arial", 16, "bold", "italic"), text_color="#006B4D")
         self.lbl_subtitulo2.grid(row=3, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="w")
@@ -148,6 +130,9 @@ class RegistroCitas(ctk.CTkFrame):
 
         res_cita = service_crear_cita(nueva_cita)
         if res_cita["success"]:
+            self.refrescar_tabla()
+            if self.on_actualizar:
+                self.on_actualizar()
             estado_servidor_whatsapp = obtener_estado_servidor()
             if estado_servidor_whatsapp["status"] == "connected":
                 cita = service_obtener_cita_por_id(res_cita["id_cita"])
@@ -157,21 +142,17 @@ class RegistroCitas(ctk.CTkFrame):
                 envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, msg)
                 if envio_mensaje["success"]:
                     service_registrar_envio_whatsapp(cita_id=cita.id_cita, mensaje=msg)
+                    messagebox.showinfo("Éxito", "¡Cita agendada correctamente!")
                 else:
                     messagebox.showwarning("Aviso", f"Cita agendada, pero falló el envío de confirmación por Whatsapp: {envio_mensaje.get('error')}")
-                    self.limpiar_formulario()
-                    return
             else:
                 messagebox.showwarning("Aviso", f"Cita agendada, pero falló el envío de confirmación por Whatsapp: No se pudo conectar con el servidor de Whatsapp.")
-                self.limpiar_formulario()
-                return
+            self.limpiar_formulario()
+            return
         else:
             messagebox.showerror("Error al agendar la cita.", res_cita.get("error"))
             self.limpiar_formulario()
             return
-        
-        messagebox.showinfo("Éxito", "¡Cita agendada correctamente!")
-        self.limpiar_formulario()
 
     def limpiar_formulario(self):
         self.opt_dia.set("Día")
@@ -239,3 +220,25 @@ class RegistroCitas(ctk.CTkFrame):
 
         btn_guardar = ctk.CTkButton(modal, text="Aceptar modificación", command=guardar_modificacion, fg_color="#FF6B35", hover_color="#E55B2B", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=40)
         btn_guardar.pack(pady=(10, 20))
+        
+    def refrescar_tabla(self):
+        for widget in self.scroll_tabla.winfo_children():
+            widget.destroy()
+
+        datos_ejemplo = service_obtener_citas_usuarias()
+
+        for fila in datos_ejemplo:
+            if fila[4] == "Activa":
+                row_frame = ctk.CTkFrame(self.scroll_tabla, fg_color="white", border_width=1, border_color="#E0E0E0", corner_radius=6, height=40)
+                row_frame.pack(fill="x", pady=3, padx=5)
+                row_frame.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
+                row_frame.grid_propagate(False)
+
+                for i in range(5):
+                    color_texto = "#32CD32" if fila[4] == "Activa" and i == 4 else "black"
+                    lbl_dato = ctk.CTkLabel(row_frame, text=fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
+                    lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
+                
+                btn_editar = ctk.CTkButton(row_frame, text="Editar ✏️", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, 
+                                        command=lambda f=fila: self.abrir_modal_editar(f))
+                btn_editar.grid(row=0, column=5, pady=8)

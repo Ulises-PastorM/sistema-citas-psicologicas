@@ -1,6 +1,5 @@
 import customtkinter as ctk
 import calendar
-from datetime import date, timedelta
 from services.citas_services import service_obtener_citas_usuarias
 from datetime import date, timedelta, datetime
 
@@ -181,8 +180,7 @@ class CalendarioView(ctk.CTkFrame):
 
             if mostrar:
                 for cita in lista_citas:
-                    if cita["estatus"] != "Cancelada":
-                        citas_a_mostrar.append((fecha_cita, cita))
+                    citas_a_mostrar.append((fecha_cita, cita))
 
         citas_a_mostrar.sort(key=lambda x: x[0])
 
@@ -256,3 +254,8 @@ class CalendarioView(ctk.CTkFrame):
                 self.db_citas[fecha_obj] = []
             
             self.db_citas[fecha_obj].append(cita_dict)
+    
+    def refrescar_datos(self):
+        self.cargar_citas()
+        self.renderizar_calendario()
+        self.actualizar_citas()

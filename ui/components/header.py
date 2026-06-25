@@ -14,15 +14,27 @@ class Header(ctk.CTkFrame):
         self.lbl_header = ctk.CTkLabel(self.top_container, text="Sistema de Gestión de Agenda de Sesiones", font=("Arial", 26, "bold", "italic"), text_color="#006B4D")
         self.lbl_header.grid(row=0, column=1)
 
-        try:
-            ic_logout = ctk.CTkImage(light_image=Image.open("assets/ic_logout.png"), size=(25, 25))
-            texto_btn = ""
-        except FileNotFoundError:
-            ic_logout = None
-            texto_btn = "➔ Salir"
-
-        self.btn_logout = ctk.CTkButton(self.top_container, text=texto_btn, image=ic_logout, width=40, height=40, fg_color="transparent", hover_color="#E0E0E0", text_color="black", command=comando_logout)
+        self.btn_logout = ctk.CTkButton(
+            self.top_container, 
+            text="Cerrar sesión", 
+            font=("Arial", 14, "bold", "italic"),
+            width=140, 
+            height=45, 
+            corner_radius=8, 
+            fg_color="#E0E0E0",
+            text_color="black",
+            command=comando_logout
+        )
         self.btn_logout.grid(row=0, column=2, sticky="e")
+
+        def on_enter(event):
+            self.btn_logout.configure(fg_color="#FF6B35", text_color="white")
+
+        def on_leave(event):
+            self.btn_logout.configure(fg_color="#E0E0E0", text_color="black")
+
+        self.btn_logout.bind("<Enter>", on_enter)
+        self.btn_logout.bind("<Leave>", on_leave)
 
         self.linea = ctk.CTkFrame(self, height=2, fg_color="#D3D3D3")
         self.linea.pack(fill="x", padx=40)

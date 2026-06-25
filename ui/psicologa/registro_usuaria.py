@@ -24,7 +24,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.lbl_titulo = ctk.CTkLabel(self, text="Registro de Usuaria para Atención Psicológica", font=("Arial", 20, "bold", "italic"), text_color="#006B4D")
         self.lbl_titulo.grid(row=0, column=0, pady=(0, 10), sticky="w")
 
-        self.card_frame = ctk.CTkScrollableFrame(self, fg_color="#F4F4F4", corner_radius=15)
+        self.card_frame = ctk.CTkFrame(self, fg_color="#F4F4F4", corner_radius=15)
         self.card_frame.grid(row=1, column=0, sticky="nsew")
         self.card_frame.grid_rowconfigure(0, weight=1)
         self.card_frame.grid_columnconfigure(0, weight=1)
@@ -156,33 +156,12 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.opt_ano.pack(side="left")
         
         f_sex, self.opt_sexo = self.crear_campo_opciones(self.page1, "Sexo:", ["Femenino", "Masculino", "Otro"])
-        self.ent_sexo_otra = ctk.CTkEntry(f_sex, placeholder_text="Especifique cuál...", **self.entry_style)
-        def verificar_sexo(valor_seleccionado):
-            if valor_seleccionado == "Otro":
-                self.ent_sexo_otra.pack(fill="x", expand=True, pady=(5, 0))
-            else:
-                self.ent_sexo_otra.pack_forget()
-                self.ent_sexo_otra.delete(0, "end")
-                
-        self.opt_sexo.configure(command=verificar_sexo)
         f_sex.grid(row=2, column=1, sticky="ew", padx=(10, 0), pady=(0, 12))
         
         f_lug, self.ent_lugar = self.crear_campo_entrada(self.page1, "Lugar de nacimiento:")
         f_lug.grid(row=3, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
         
         f_len, self.opt_lengua = self.crear_campo_opciones(self.page1, "Lengua indígena:", ["Ninguna", "Mixteco", "Zapoteco", "Mazateco", "Otra"])
-        
-        self.ent_lengua_otra = ctk.CTkEntry(f_len, placeholder_text="Especifique cuál...", **self.entry_style)
-        
-        def verificar_lengua(valor_seleccionado):
-            if valor_seleccionado == "Otra":
-                self.ent_lengua_otra.pack(fill="x", expand=True, pady=(5, 0))
-            else:
-                self.ent_lengua_otra.pack_forget()
-                self.ent_lengua_otra.delete(0, "end")
-                
-        self.opt_lengua.configure(command=verificar_lengua)
-        
         f_len.grid(row=3, column=1, sticky="ew", padx=(10, 0), pady=(0, 12))
 
         f_ocu, self.ent_ocupacion = self.crear_campo_entrada(self.page1, "Ocupación:")
@@ -213,41 +192,22 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         ctk.CTkLabel(modal, text="⚕️ Seleccione los padecimientos", font=("Arial", 16, "bold"), text_color="#006B4D").pack(pady=(20, 10))
 
-        scroll_pad = ctk.CTkScrollableFrame(modal, fg_color="transparent")
+        scroll_pad = ctk.CTkFrame(modal, fg_color="transparent")
         scroll_pad.pack(fill="both", expand=True, padx=30, pady=(0, 10))
 
         checkbox_vars = {}
-
-        ent_otro_pad = ctk.CTkEntry(scroll_pad, placeholder_text="Especifique el padecimiento...", **self.entry_style)
-
-        def verificar_otro():
-            if checkbox_vars["Otro"].get() == "Otro":
-                ent_otro_pad.pack(fill="x", padx=25, pady=(0, 5)) 
-            else:
-                ent_otro_pad.pack_forget()
 
         for pad in self.lista_padecimientos:
             valor_inicial = pad if pad in self.padecimientos_seleccionados else ""
             var = ctk.StringVar(value=valor_inicial)
             checkbox_vars[pad] = var
             
-            if pad == "Otro":
-                cb = ctk.CTkCheckBox(scroll_pad, text=pad, variable=var, onvalue=pad, offvalue="", fg_color="#FF6B35", hover_color="#E55A2B", text_color="black", command=verificar_otro)
-            else:
-                cb = ctk.CTkCheckBox(scroll_pad, text=pad, variable=var, onvalue=pad, offvalue="", fg_color="#FF6B35", hover_color="#E55A2B", text_color="black")
+            cb = ctk.CTkCheckBox(scroll_pad, text=pad, variable=var, onvalue=pad, offvalue="", fg_color="#FF6B35", hover_color="#E55A2B", text_color="black")
             cb.pack(anchor="w", pady=5)
 
-            if pad == "Otro" and valor_inicial == "Otro":
-                ent_otro_pad.pack(fill="x", padx=25, pady=(0, 5))
-                ent_otro_pad.insert(0, self.padecimiento_otro_texto)
 
         def guardar_padecimientos():
             self.padecimientos_seleccionados = [var.get() for var in checkbox_vars.values() if var.get() != ""]
-            
-            if "Otro" in self.padecimientos_seleccionados:
-                self.padecimiento_otro_texto = ent_otro_pad.get()
-            else:
-                self.padecimiento_otro_texto = "" 
                 
             num_seleccionados = len(self.padecimientos_seleccionados)
             if num_seleccionados > 0:
@@ -357,15 +317,6 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         dependencias = ["Vicefiscalía", "Procuraduría", "Juzgado familiar", "Hospital", "Otra"]
         f_can, self.opt_canalizada = self.crear_campo_opciones(self.page2, "Canalizada por:", dependencias)
-        self.ent_canalizada_otra = ctk.CTkEntry(f_can, placeholder_text="Especifique cuál...", **self.entry_style)
-        def verificar_can(valor_seleccionado):
-            if valor_seleccionado == "Otra":
-                self.ent_canalizada_otra.pack(fill="x", expand=True, pady=(5, 0))
-            else:
-                self.ent_canalizada_otra.pack_forget()
-                self.ent_canalizada_otra.delete(0, "end")
-                
-        self.opt_canalizada.configure(command=verificar_can)
         f_can.grid(row=5, column=0, columnspan=2, padx=5, pady=(0, 10), sticky="ew")
         
         f_red, self.ent_red_apoyo = self.crear_campo_entrada(self.page2, "Red de apoyo (Nombre y Parentesco):")
@@ -502,14 +453,10 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.opt_ano.set("Año")
         
         self.opt_sexo.set("Femenino")
-        self.ent_sexo_otra.delete(0, "end")
-        self.ent_sexo_otra.pack_forget()
         
         self.ent_lugar.delete(0, "end")
         
         self.opt_lengua.set("Ninguna") 
-        self.ent_lengua_otra.delete(0, "end")
-        self.ent_lengua_otra.pack_forget()
         
         self.ent_ocupacion.delete(0, "end")
         
@@ -532,8 +479,6 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.ent_lugar_terapia.delete(0, "end")
         
         self.opt_canalizada.set("Vicefiscalía")
-        self.ent_canalizada_otra.delete(0, "end")
-        self.ent_canalizada_otra.pack_forget()
         
         self.ent_red_apoyo.delete(0, "end")
 

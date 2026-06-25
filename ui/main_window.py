@@ -59,8 +59,8 @@ class MainWindow(ctk.CTk):
         self.vistas_frame.grid_rowconfigure(0, weight=1)
         self.vistas_frame.grid_columnconfigure(0, weight=1)
 
-        self.vista_registro = RegistroCitas(self.vistas_frame)
         self.vista_calendario = CalendarioView(self.vistas_frame)
+        self.vista_registro = RegistroCitas(self.vistas_frame, on_actualizar=self.actualizar_vistas_dependientes)
         self.vista_usuaria = RegistroUsuariaView(self.vistas_frame)
         self.vista_observacion = ObservacionesView(self.vistas_frame)
 
@@ -95,3 +95,10 @@ class MainWindow(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
 
         self.mostrar_login()
+        
+    def actualizar_vistas_dependientes(self):
+        if hasattr(self.vista_calendario, 'refrescar_datos'):
+            self.vista_calendario.refrescar_datos()
+
+        if hasattr(self.vista_observacion, 'refrescar_tabla'):
+            self.vista_observacion.refrescar_tabla()

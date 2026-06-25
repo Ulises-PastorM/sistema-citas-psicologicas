@@ -7,7 +7,7 @@ class LoginView(ctk.CTkFrame):
         super().__init__(master, fg_color="#F8E8E8") 
         self.comando_login = comando_login
 
-        self.card = ctk.CTkFrame(self, fg_color="white", corner_radius=20, width=450, height=505)
+        self.card = ctk.CTkFrame(self, fg_color="white", corner_radius=20, width=450, height=520)
         self.card.place(relx=0.5, rely=0.5, anchor="center")
         self.card.pack_propagate(False)
 
@@ -16,7 +16,7 @@ class LoginView(ctk.CTkFrame):
             lbl_logo = ctk.CTkLabel(self.card, image=img_logo, text="")
         except FileNotFoundError:
             lbl_logo = ctk.CTkLabel(self.card, text="[ IMAGEN LOGO ]", font=("Arial", 20, "bold"), text_color="#7A1B6C")
-        lbl_logo.pack(pady=(35, 10))
+        lbl_logo.pack(pady=(25, 10))
 
         ctk.CTkLabel(self.card, text="Sistema de Gestión de Agenda de Sesiones", font=("Arial", 16, "bold", "italic"), text_color="#006B4D").pack(pady=(0, 20))
 
@@ -45,7 +45,7 @@ class LoginView(ctk.CTkFrame):
         self.ent_usuario.pack(side="left", fill="both", expand=True, padx=(0, 15), pady=2)
 
         frame_pwd = ctk.CTkFrame(self.card, fg_color="white", border_width=2, border_color="#E8E8E8", corner_radius=20, height=45)
-        frame_pwd.pack(fill="x", padx=60, pady=(0, 20))
+        frame_pwd.pack(fill="x", padx=60, pady=(0, 0))
         frame_pwd.pack_propagate(False)
         
         try:
@@ -57,13 +57,13 @@ class LoginView(ctk.CTkFrame):
         self.ent_password = ctk.CTkEntry(frame_pwd, placeholder_text="Contraseña", show="*", fg_color="white", border_width=0, text_color="black")
         self.ent_password.pack(side="left", fill="both", expand=True, padx=(0, 15), pady=2)
         
+        self.lbl_error = ctk.CTkLabel(self.card, text="", text_color="red", font=("Arial", 12, "bold"))
+        self.lbl_error.pack(pady=(2, 5))
+        
         self.btn_login = ctk.CTkButton(self.card, text="Iniciar Sesión", fg_color="#FF6B35", hover_color="#E55A2B", text_color="white", font=("Arial", 16, "bold"), corner_radius=20, height=45, command=self.validar_login)
-        self.btn_login.pack(fill="x", padx=60, pady=(0, 15))
+        self.btn_login.pack(fill="x", padx=60, pady=(0, 5))
 
         ctk.CTkLabel(self.card, text="¿Olvidaste tu contraseña?", font=("Arial", 12, "bold", "italic"), text_color="#7A1B6C", cursor="hand2").pack(pady=(5, 0))
-
-        self.lbl_error = ctk.CTkLabel(self.card, text="", text_color="red", font=("Arial", 12))
-        self.lbl_error.pack(pady=(5, 0))
 
         try:
             img_wave = ctk.CTkImage(light_image=Image.open("assets/banner_buttom.png"), size=(450, 80))
@@ -76,7 +76,15 @@ class LoginView(ctk.CTkFrame):
         user = self.ent_usuario.get()
         pwd = self.ent_password.get()
         
-        if service_login(user, pwd)["success"]:
+        if not user or not pwd:
+            self.lbl_error.configure(text="Por favor, completa todos los campos.")
+            return
+        
+        respuesta = service_login(user, pwd)
+        
+        if respuesta.get("success"):
+            self.lbl_error.configure(text="") 
             self.comando_login() 
         else:
-            self.lbl_error.configure(text="Usuario o contraseña incorrectos")
+            error_msg = respuesta.get("error", "Usuario o contraseña incorrectos")
+            self.lbl_error.configure(text=error_msg)

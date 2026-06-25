@@ -39,6 +39,11 @@ class ObservacionesView(ctk.CTkFrame):
 
         self.scroll_tabla = ctk.CTkScrollableFrame(self.card_frame, fg_color="transparent")
         self.scroll_tabla.grid(row=2, column=0, padx=15, pady=(0, 20), sticky="nsew")
+        self.refrescar_tabla()
+                
+    def refrescar_tabla(self):
+        for widget in self.scroll_tabla.winfo_children():
+            widget.destroy()
 
         datos_ejemplo = service_obtener_citas_usuarias()
 
