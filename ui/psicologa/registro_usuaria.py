@@ -283,14 +283,24 @@ class RegistroUsuariaView(ctk.CTkFrame):
         for i, text in enumerate(headers):
             ctk.CTkLabel(tabla_frame, text=text, text_color="gray", font=("Arial", 11)).grid(row=0, column=i, pady=2)
         
+        opciones_numeros = [str(n) for n in range(16)]
+        
+        self.menus_familia = [] 
+
         ctk.CTkLabel(tabla_frame, text="Mujeres:", text_color="gray").grid(row=1, column=0, sticky="e", padx=5)
         for i in range(1, 4): 
-            ctk.CTkEntry(tabla_frame, height=30, fg_color="white", text_color="black", validate="key", validatecommand=self.vcmd_numeros).grid(row=1, column=i, padx=5, pady=2, sticky="ew")
+            menu = ctk.CTkOptionMenu(tabla_frame, values=opciones_numeros, **self.option_style)
+            menu.set("0") 
+            menu.grid(row=1, column=i, padx=5, pady=2, sticky="ew")
+            self.menus_familia.append(menu)
         
         ctk.CTkLabel(tabla_frame, text="Hombres:", text_color="gray").grid(row=2, column=0, sticky="e", padx=5)
         for i in range(1, 4): 
-            ctk.CTkEntry(tabla_frame, height=30, fg_color="white", text_color="black", validate="key", validatecommand=self.vcmd_numeros).grid(row=2, column=i, padx=5, pady=2, sticky="ew")
-
+            menu = ctk.CTkOptionMenu(tabla_frame, values=opciones_numeros, **self.option_style)
+            menu.set("0") 
+            menu.grid(row=2, column=i, padx=5, pady=2, sticky="ew")
+            self.menus_familia.append(menu)
+            
         ctk.CTkFrame(self.page2, height=2, fg_color="#D3D3D3").grid(row=2, column=0, columnspan=4, sticky="ew", pady=10)
 
         ctk.CTkLabel(self.page2, text="Anteriormente\n¿Acudió a INMUJER?", text_color="gray").grid(row=3, column=0, sticky="e", padx=5)
@@ -481,6 +491,10 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.opt_canalizada.set("Vicefiscalía")
         
         self.ent_red_apoyo.delete(0, "end")
+        
+        if hasattr(self, 'menus_familia'):
+            for menu in self.menus_familia:
+                menu.set("0")
 
         self.limpiar_entries_hijos(self.page2)
         

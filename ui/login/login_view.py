@@ -63,7 +63,7 @@ class LoginView(ctk.CTkFrame):
         self.btn_login = ctk.CTkButton(self.card, text="Iniciar Sesión", fg_color="#FF6B35", hover_color="#E55A2B", text_color="white", font=("Arial", 16, "bold"), corner_radius=20, height=45, command=self.validar_login)
         self.btn_login.pack(fill="x", padx=60, pady=(0, 5))
 
-        ctk.CTkLabel(self.card, text="¿Olvidaste tu contraseña?", font=("Arial", 12, "bold", "italic"), text_color="#7A1B6C", cursor="hand2").pack(pady=(5, 0))
+        #ctk.CTkLabel(self.card, text="¿Olvidaste tu contraseña?", font=("Arial", 12, "bold", "italic"), text_color="#7A1B6C", cursor="hand2").pack(pady=(5, 0))
 
         try:
             img_wave = ctk.CTkImage(light_image=Image.open("assets/banner_buttom.png"), size=(450, 80))
