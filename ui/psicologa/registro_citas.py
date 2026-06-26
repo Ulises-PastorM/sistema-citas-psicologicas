@@ -264,7 +264,7 @@ class RegistroCitas(ctk.CTkFrame):
 
                 for i in range(5):
                     color_texto = "#32CD32" if fila[4] == "Activa" and i == 4 else "black"
-                    lbl_dato = ctk.CTkLabel(row_frame, text=fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
+                    lbl_dato = ctk.CTkLabel(row_frame, text=self.fecha_a_texto(fila[i]) if i == 1 else fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
                     lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
                 
                 btn_editar = ctk.CTkButton(row_frame, text="Editar ✏️", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, 

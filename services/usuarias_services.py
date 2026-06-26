@@ -8,6 +8,7 @@ from repositories.usuarias_repository import (
     obtener_usuaria_basico,
     crear_usuaria_direccion,
     obtener_usuaria_por_telefono,
+    obtener_usuaria_direccion,
 )
 
 
@@ -170,3 +171,13 @@ def service_crear_usuaria_direccion(usuaria_id, direccion_id):
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": f"Error al crear la usuaria: {str(e)}"}
+
+def service_obtener_usuaria_direccion(usuaria_id) -> dict | None:
+    if not usuaria_id:
+        return None
+    
+    try:
+        return obtener_usuaria_direccion(usuaria_id)
+    except Exception as e:
+        print(f"[usuarias_services_direccion] Error al obtener usuaria_direccion: {e}")
+        return None

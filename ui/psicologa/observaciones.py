@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from datetime import datetime
 from services.citas_services import service_obtener_citas_usuarias
 from models.sesion_model import Sesion
 from services.sesiones_services import (
@@ -41,6 +42,20 @@ class ObservacionesView(ctk.CTkFrame):
         self.scroll_tabla.grid(row=2, column=0, padx=15, pady=(0, 20), sticky="nsew")
         self.refrescar_tabla()
                 
+    
+    def fecha_a_texto(self, fecha_str: str) -> str:
+        meses = [
+            "enero", "febrero", "marzo", "abril",
+            "mayo", "junio", "julio", "agosto",
+            "septiembre", "octubre", "noviembre", "diciembre"
+        ]
+
+        try:
+            fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
+            return f"{fecha.day} de {meses[fecha.month - 1]} de {fecha.year}"
+        except ValueError:
+            raise ValueError("La fecha debe tener el formato AAAA-MM-DD")
+
     def refrescar_tabla(self):
         for widget in self.scroll_tabla.winfo_children():
             widget.destroy()
@@ -56,7 +71,7 @@ class ObservacionesView(ctk.CTkFrame):
 
                 for i in range(5):
                     color_texto = "#32CD32" if fila[4] == "Activa" and i == 4 else "black"
-                    lbl_dato = ctk.CTkLabel(row_frame, text=fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
+                    lbl_dato = ctk.CTkLabel(row_frame, text=self.fecha_a_texto(fila[i]) if i == 1 else fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
                     lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
                 
                 btn_editar = ctk.CTkButton(row_frame, text="Editar Observaciones", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, command=lambda f=fila: self.abrir_modal(f))

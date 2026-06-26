@@ -3,8 +3,27 @@ from tkinter import messagebox
 from datetime import datetime
 from models.usuaria_model import Usuaria
 from models.direccion_model import Direccion
-from services.usuarias_services import service_crear_usuaria, service_crear_usuaria_direccion, service_obtener_usuarias
-from services.direcciones_services import service_crear_direccion
+from services.usuarias_services import (
+    service_crear_usuaria,
+    service_crear_usuaria_direccion,
+    service_obtener_usuarias,
+    service_obtener_usuaria_por_telefono,
+    service_obtener_usuaria_direccion,
+    service_actualizar_usuaria)
+from services.direcciones_services import (
+    service_crear_direccion,
+    service_obtener_direccion_por_id,
+    service_actualizar_direccion)
+from repositories.catalogos_repository import (
+    obtener_domicilio_estatus,
+    obtener_escolaridades,
+    obtener_estados_civiles,
+    obtener_lenguas_indigenas,
+    obtener_roles,
+    obtener_servicios_immujer,
+    obtener_sexos,
+    obtener_estatus
+)
 
 class RegistroUsuariaView(ctk.CTkFrame):
     def __init__(self, master):
@@ -12,8 +31,20 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.datos_domicilio = {}
+        self.datos_domicilio = None
         self.padecimientos_seleccionados = [] 
+        self.editando_usuaria = False
+        self.id_usuaria_editada = 0
+        self.id_direccion_editada = 0
+        self.btn_submit = None
+        self.domicilio_estatus_list = None
+        self.escolaridades_list = None
+        self.estados_civiles_list = None
+        self.lenguas_indigenas_list = None
+        self.roles_list = None
+        self.servicios_immujer_list = None
+        self.sexos_list = None
+        self.estatus_list = None
         
         self.lista_padecimientos = [
             "Violencia física", "Violencia psicológica", "Violencia sexual", 
@@ -64,6 +95,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         self.vcmd_numeros = (self.register(self.solo_numeros), '%P')
 
+        self.cargar_catalogos()
         self.crear_pagina_1()
         self.crear_pagina_2()
         self.crear_pagina_3()
@@ -99,7 +131,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
             entry.pack(anchor="w")
         else:
             entry.pack(fill="x", expand=True)
-            
+
         return frame, entry
 
     def crear_campo_opciones(self, parent, texto_label, opciones):
@@ -120,6 +152,20 @@ class RegistroUsuariaView(ctk.CTkFrame):
                             corner_radius=8, height=35, anchor="w")
         btn.pack(fill="x", expand=True)
         return frame, btn
+    
+    def cargar_catalogos(self):
+        try:
+            self.domicilio_estatus_list = obtener_domicilio_estatus()
+            self.escolaridades_list = obtener_escolaridades()
+            self.estados_civiles_list = obtener_estados_civiles()
+            self.lenguas_indigenas_list = obtener_lenguas_indigenas()
+            self.roles_list = obtener_roles()
+            self.servicios_immujer_list = obtener_servicios_immujer()
+            self.sexos_list = obtener_sexos()
+            self.estatus_list = obtener_estatus()
+        except Exception as e:
+            print(f"[cargar_catalogos] Error al cargar catálogos: {e}")
+            return
 
     def crear_pagina_1(self):
         self.page1 = ctk.CTkFrame(self.card_frame, fg_color="transparent")
@@ -131,7 +177,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
         f_nom, self.ent_nombre = self.crear_campo_entrada(self.page1, "Nombre completo:")
         f_nom.grid(row=1, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
         
-        f_esc, self.opt_escolaridad = self.crear_campo_opciones(self.page1, "Escolaridad:", ["Ninguna", "Primaria", "Secundaria", "Bachillerato", "Licenciatura", "Posgrado"])
+        escolaridades = [e.escolaridad for e in self.escolaridades_list]
+        f_esc, self.opt_escolaridad = self.crear_campo_opciones(self.page1, "Escolaridad:", escolaridades)
         f_esc.grid(row=1, column=1, sticky="ew", padx=(10, 0), pady=(0, 12))
         
         f_fec = ctk.CTkFrame(self.page1, fg_color="transparent")
@@ -158,13 +205,15 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.opt_ano = ctk.CTkOptionMenu(f_fec_inputs, values=anos, width=80, **self.option_style)
         self.opt_ano.pack(side="left")
         
-        f_sex, self.opt_sexo = self.crear_campo_opciones(self.page1, "Sexo:", ["Femenino", "Masculino", "Otro"])
+        sexos = [s.sexo for s in self.sexos_list]
+        f_sex, self.opt_sexo = self.crear_campo_opciones(self.page1, "Sexo:", sexos)
         f_sex.grid(row=2, column=1, sticky="ew", padx=(10, 0), pady=(0, 12))
         
         f_lug, self.ent_lugar = self.crear_campo_entrada(self.page1, "Lugar de nacimiento:")
         f_lug.grid(row=3, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
         
-        f_len, self.opt_lengua = self.crear_campo_opciones(self.page1, "Lengua indígena:", ["Ninguna", "Mixteco", "Zapoteco", "Mazateco", "Otra"])
+        lenguas_indigenas = [l.lengua_indigena for l in self.lenguas_indigenas_list]
+        f_len, self.opt_lengua = self.crear_campo_opciones(self.page1, "Lengua indígena:", lenguas_indigenas)
         f_len.grid(row=3, column=1, sticky="ew", padx=(10, 0), pady=(0, 12))
 
         f_ocu, self.ent_ocupacion = self.crear_campo_entrada(self.page1, "Ocupación:")
@@ -179,7 +228,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
         f_dom, self.btn_domicilio = self.crear_campo_boton(self.page1, "Domicilio:", "📍 Ingresar Domicilio...", self.abrir_modal_domicilio)
         f_dom.grid(row=5, column=1, sticky="ew", padx=(10, 0), pady=(0, 12))
         
-        f_civ, self.opt_civil = self.crear_campo_opciones(self.page1, "Estado civil:", ["Soltera", "Casada", "Divorciada", "Viuda"])
+        estados_civiles = [ec.estado_civil for ec in self.estados_civiles_list]
+        f_civ, self.opt_civil = self.crear_campo_opciones(self.page1, "Estado civil:", estados_civiles)
         f_civ.grid(row=6, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
         
         btn_next = ctk.CTkButton(self.page1, text="➔", command=lambda: self.mostrar_pagina(self.page2), **self.btn_nav_style)
@@ -245,26 +295,38 @@ class RegistroUsuariaView(ctk.CTkFrame):
         ent_municipio = ctk.CTkEntry(modal, **self.entry_style)
         ent_municipio.pack(fill="x", padx=30, pady=(0, 15))
 
+        domicilio_estatus = [d.domicilio_estatus for d in self.domicilio_estatus_list]
         ctk.CTkLabel(modal, text="Estatus de su domicilio:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", padx=30)
-        opt_estatus = ctk.CTkOptionMenu(modal, values=["Propio", "Rentado", "Prestado"], **self.option_style)
+        opt_estatus = ctk.CTkOptionMenu(modal, values=domicilio_estatus, **self.option_style)
         opt_estatus.pack(fill="x", padx=30, pady=(0, 25))
 
         if self.datos_domicilio:
-            ent_calle.insert(0, self.datos_domicilio.get("calle_numero", ""))
-            ent_colonia.insert(0, self.datos_domicilio.get("colonia", ""))
-            ent_municipio.insert(0, self.datos_domicilio.get("municipio", ""))
-            opt_estatus.set(self.datos_domicilio.get("estatus", "Propio"))
+            ent_calle.insert(0, self.datos_domicilio.calle_numero)
+            ent_colonia.insert(0, self.datos_domicilio.colonia)
+            ent_municipio.insert(0, self.datos_domicilio.municipio)
+            opt_estatus.set(self._id_a_texto(self.domicilio_estatus_list, "id_domicilio_estatus", self.datos_domicilio.domicilio_estatus_id, "domicilio_estatus"))
 
         def guardar_datos():
-            estatus_map = {"Propio": 1, "Rentado": 2, "Prestado": 3}
+            if ent_calle.get() == "":
+                messagebox.showwarning("Faltan datos", "Por favor, ingrese una calle y numero")
+                return
             
-            self.datos_domicilio = {
-                "calle_numero": ent_calle.get(),
-                "colonia": ent_colonia.get(),
-                "municipio": ent_municipio.get(),
-                "estatus": opt_estatus.get(),
-                "estatus_id": estatus_map.get(opt_estatus.get(), 1)
-            }
+            if ent_colonia.get() == "":
+                messagebox.showwarning("Faltan datos", "Por favor, ingrese una colonia o agencia")
+                return
+            
+            if ent_municipio.get() == "":
+                messagebox.showwarning("Faltan datos", "Por favor, ingrese un municipio")
+                return
+
+            self.datos_domicilio = Direccion(
+                calle_numero = ent_calle.get(),
+                colonia = ent_colonia.get(),
+                municipio = ent_municipio.get(),
+                domicilio_estatus_id = self._texto_a_id(self.domicilio_estatus_list, "domicilio_estatus", opt_estatus.get(), "id_domicilio_estatus"),
+                id_direccion = self.id_direccion_editada if self.editando_usuaria else None
+            )
+
             self.btn_domicilio.configure(text=" ✅ Domicilio guardado", text_color="black", border_color="#32CD32", border_width=2)
             modal.destroy()
 
@@ -307,9 +369,9 @@ class RegistroUsuariaView(ctk.CTkFrame):
         ctk.CTkFrame(self.page2, height=2, fg_color="#D3D3D3").grid(row=2, column=0, columnspan=4, sticky="ew", pady=10)
 
         ctk.CTkLabel(self.page2, text="Anteriormente\n¿Acudió a INMUJER?", text_color="gray").grid(row=3, column=0, sticky="e", padx=5)
-        self.var_inmujer = ctk.StringVar(value="No")
-        ctk.CTkRadioButton(self.page2, text="Sí", variable=self.var_inmujer, value="Sí", radiobutton_width=15, radiobutton_height=15).grid(row=3, column=1, sticky="w")
-        ctk.CTkRadioButton(self.page2, text="No", variable=self.var_inmujer, value="No", radiobutton_width=15, radiobutton_height=15).grid(row=3, column=1, sticky="e")
+        self.var_immujer = ctk.StringVar(value="No")
+        ctk.CTkRadioButton(self.page2, text="Sí", variable=self.var_immujer, value="Sí", radiobutton_width=15, radiobutton_height=15, command=self.actualizar_campos_immujer).grid(row=3, column=1, sticky="w")
+        ctk.CTkRadioButton(self.page2, text="No", variable=self.var_immujer, value="No", radiobutton_width=15, radiobutton_height=15, command=self.actualizar_campos_immujer).grid(row=3, column=1, sticky="e")
         
         f_cua, self.ent_cuando = self.crear_campo_entrada(self.page2, "¿Cuándo?")
         f_cua.grid(row=3, column=2, padx=5, sticky="ew", pady=(0, 10))
@@ -319,14 +381,16 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         ctk.CTkLabel(self.page2, text="Anteriormente\n¿Ha recibido terapia?", text_color="gray").grid(row=4, column=0, sticky="e", padx=5, pady=10)
         self.var_terapia = ctk.StringVar(value="No")
-        ctk.CTkRadioButton(self.page2, text="Sí", variable=self.var_terapia, value="Sí", radiobutton_width=15, radiobutton_height=15).grid(row=4, column=1, sticky="w")
-        ctk.CTkRadioButton(self.page2, text="No", variable=self.var_terapia, value="No", radiobutton_width=15, radiobutton_height=15).grid(row=4, column=1, sticky="e")
+        ctk.CTkRadioButton(self.page2, text="Sí", variable=self.var_terapia, value="Sí", radiobutton_width=15, radiobutton_height=15, command=self.actualizar_campos_immujer).grid(row=4, column=1, sticky="w")
+        ctk.CTkRadioButton(self.page2, text="No", variable=self.var_terapia, value="No", radiobutton_width=15, radiobutton_height=15, command=self.actualizar_campos_immujer).grid(row=4, column=1, sticky="e")
         
         f_tie, self.ent_tiempo = self.crear_campo_entrada(self.page2, "Tiempo:")
         f_tie.grid(row=4, column=2, padx=5, sticky="ew", pady=(0, 10))
         
         f_lug_terapia, self.ent_lugar_terapia = self.crear_campo_entrada(self.page2, "Lugar:")
         f_lug_terapia.grid(row=4, column=3, padx=5, sticky="ew", pady=(0, 10))
+
+        self.actualizar_campos_immujer()
 
         dependencias = ["Vicefiscalía", "Procuraduría", "Juzgado familiar", "Hospital", "Otra"]
         f_can, self.opt_canalizada = self.crear_campo_opciones(self.page2, "Canalizada por:", dependencias)
@@ -368,11 +432,56 @@ class RegistroUsuariaView(ctk.CTkFrame):
         btn_prev = ctk.CTkButton(self.page3, text="🡨", command=lambda: self.mostrar_pagina(self.page2), **self.btn_nav_style)
         btn_prev.grid(row=4, column=0, sticky="w", pady=(20, 0))
 
-        btn_submit = ctk.CTkButton(self.page3, text="+ Registrar Usuaria", fg_color="#FF6B35", text_color="white", font=("Arial", 15, "bold"), height=35, corner_radius=8, command=self.guardar_registro)
-        btn_submit.grid(row=4, column=1, sticky="e", pady=(20, 0))
+        self.btn_submit = ctk.CTkButton(
+            self.page3,
+            text="+ Registrar Usuaria",
+            fg_color="#FF6B35",
+            text_color="white",
+            font=("Arial", 15, "bold"),
+            height=35,
+            corner_radius=8,
+            command=self.guardar_registro
+        )
+        self.btn_submit.grid(row=4, column=1, sticky="e", pady=(20, 0))
         
+    
+    def actualizar_campos_immujer(self):
+        if self.var_immujer.get() == "Sí":
+            self.ent_cuando.configure(state="normal", fg_color="white", text_color="black")
+            self.ent_tipo_apoyo.configure(state="normal", fg_color="white", text_color="black")
+        else:
+            self.ent_cuando.configure(state="disabled", fg_color="#EBEBEB", text_color="#7A7A7A")
+            self.ent_tipo_apoyo.configure(state="disabled", fg_color="#EBEBEB", text_color="#7A7A7A")
         
+        if self.var_terapia.get() == "Sí":
+            self.ent_tiempo.configure(state="normal", fg_color="white", text_color="black")
+            self.ent_lugar_terapia.configure(state="normal", fg_color="white", text_color="black")
+        else:
+            self.ent_tiempo.configure(state="disabled", fg_color="#EBEBEB", text_color="#7A7A7A")
+            self.ent_lugar_terapia.configure(state="disabled", fg_color="#EBEBEB", text_color="#7A7A7A")
+
+    def refrescar_boton_registrar_editar(self):
+        self.btn_submit.configure(
+            text="+ Guardar cambios" if self.editando_usuaria else "+ Registrar Usuaria"
+        )
+    
+    def _id_a_texto(self, lista, attr_id, valor_id, attr_texto) -> str:
+        item = next((x for x in lista if getattr(x, attr_id) == valor_id), None)
+        return getattr(item, attr_texto) if item else "Sin especificar"
+    
+    def _texto_a_id(self, lista, attr_texto, valor_texto, attr_id) -> int | None:
+        item = next((x for x in lista if getattr(x, attr_texto) == valor_texto), None)
+        return getattr(item, attr_id) if item else 1
+
     def guardar_registro(self):
+            if self.ent_nombre.get() == "":
+                messagebox.showwarning("Faltan datos", "Por favor, ingrese un nombre válido")
+                return
+            
+            if self.ent_telefono.get() == "":
+                messagebox.showwarning("Faltan datos", "Por favor, ingrese un telefono válido")
+                return
+            
             dia = self.opt_dia.get()
             mes = self.opt_mes.get()
             anio = self.opt_ano.get()
@@ -381,8 +490,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 messagebox.showwarning("Faltan datos", "Por favor, seleccione una fecha de nacimiento válida.")
                 return
 
-            meses_dict = {"Ene": "01", "Feb": "02", "Mar": "03", "Abr": "04", "May": "05", "Jun": "06", "Jul": "07", "Ago": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dic": "12"}
-            fecha_nac_str = f"{anio}-{meses_dict[mes]}-{dia}"
+            meses_a_num_dict = {"Ene": "01", "Feb": "02", "Mar": "03", "Abr": "04", "May": "05", "Jun": "06", "Jul": "07", "Ago": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dic": "12"}
+            fecha_nac_str = f"{anio}-{meses_a_num_dict[mes]}-{dia}"
             
             try:
                 f_nac = datetime.strptime(fecha_nac_str, "%Y-%m-%d")
@@ -392,10 +501,6 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 messagebox.showerror("Error", "La fecha de nacimiento no es válida.")
                 return
 
-            map_escolaridad = {"Ninguna": 1, "Primaria": 2, "Secundaria": 3, "Bachillerato": 4, "Licenciatura": 5, "Posgrado": 6}
-            map_sexo = {"Femenino": 1, "Masculino": 2, "Otro": 3}
-            map_lengua = {"Ninguna": 1, "Mixteco": 2, "Zapoteco": 3, "Mazateco": 4, "Otra": 5}
-            map_civil = {"Soltera": 1, "Casada": 2, "Divorciada": 3, "Viuda": 4, "Union Libre": 5}
             
             hoy_str = datetime.today().strftime("%Y-%m-%d")
 
@@ -405,59 +510,88 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 telefono = self.ent_telefono.get(),
                 fecha_nacimiento = fecha_nac_str,
                 lugar_nacimiento = self.ent_lugar.get(),
-                escolaridad_id = map_escolaridad.get(self.opt_escolaridad.get(), 1),
+                escolaridad_id = self._texto_a_id(self.escolaridades_list, "escolaridad", self.opt_escolaridad.get(), "id_escolaridad"),
                 ocupacion = self.ent_ocupacion.get(),
-                estado_civil_id = map_civil.get(self.opt_civil.get(), 1),
-                sexo_id = map_sexo.get(self.opt_sexo.get(), 1),
-                lengua_indigena_id = map_lengua.get(self.opt_lengua.get(), 1),
+                estado_civil_id = self._texto_a_id(self.estados_civiles_list, "estado_civil", self.opt_civil.get(), "id_estado_civil"),
+                sexo_id = self._texto_a_id(self.sexos_list, "sexo", self.opt_sexo.get(), "id_sexo"),
+                lengua_indigena_id = self._texto_a_id(self.lenguas_indigenas_list, "lengua_indigena", self.opt_lengua.get(), "id_lengua_indigena"),
                 padecimiento = ", ".join(self.padecimientos_seleccionados),
-                servicio_immujer_id = 1 if self.var_inmujer.get() == "Sí" else 2,
-                servicio_immujer_fecha = hoy_str, 
-                terapia_tiempo = "6 meses", 
-                terapia_lugar = "Centro de Atención IMMUJER",
+                servicio_immujer_id = 1 if self.var_immujer.get() == "Sí" else 2,
+                servicio_immujer_fecha = self.ent_cuando.get() if self.var_immujer.get() == "Sí" else hoy_str, 
+                terapia_tiempo = self.ent_tiempo.get() if self.var_terapia.get() == "Sí" else "", 
+                terapia_lugar = self.ent_lugar_terapia.get() if self.var_terapia.get() == "Sí" else "",
                 canalizada_por = self.opt_canalizada.get(),
                 red_apoyo = self.ent_red_apoyo.get(),
                 motivo_consulta = self.txt_motivo.get("0.0", "end").strip(),
-                estatus_id = 1 
+                estatus_id = 1,
+                id_usuaria = self.id_usuaria_editada if self.editando_usuaria else None 
             )
 
-            confirmacion = messagebox.askyesno("Confirmar Registro", f"¿Está segura de que desea registrar a {self.ent_nombre.get()}?")
-            
-            if not confirmacion:
-                return
-            
-            res_usuaria = service_crear_usuaria(nueva_usuaria)
-            
-            if not res_usuaria.get("success"):
-                messagebox.showerror("Error al registrar", res_usuaria.get("error"))
-                return
-            
-            id_usuaria_creada = res_usuaria.get("id_usuaria")
-
+            if not self.editando_usuaria:
+                confirmacion = messagebox.askyesno("Confirmar Registro", f"¿Está segura de que desea registrar a {self.ent_nombre.get()}?")
+                if not confirmacion:
+                    return
+                res_usuaria = service_crear_usuaria(nueva_usuaria)
+                if not res_usuaria.get("success"):
+                    messagebox.showerror("Error al registrar", res_usuaria.get("error"))
+                    return
+                id_usuaria_creada = res_usuaria.get("id_usuaria")
+            else:
+                confirmacion = messagebox.askyesno("Confirmar Cambios", f"¿Guardar cambios hechos en la información de {self.ent_nombre.get()}?")
+                if not confirmacion:
+                    return
+                res_actualizar_usuaria = service_actualizar_usuaria(nueva_usuaria)
+                if not res_actualizar_usuaria.get("success"):
+                    messagebox.showerror("Error al actualizar", res_actualizar_usuaria.get("error"))
+                    return
+            # Si hay información de direccion guardada
             if self.datos_domicilio:
-                nueva_direccion = Direccion(
-                    calle_numero = self.datos_domicilio.get("calle_numero", ""),
-                    colonia = self.datos_domicilio.get("colonia", ""),
-                    municipio = self.datos_domicilio.get("municipio", ""),
-                    domicilio_estatus_id = self.datos_domicilio.get("estatus_id", 1)
-                )
-                res_direccion = service_crear_direccion(nueva_direccion)
-                
-                if res_direccion.get("success"):
-                    id_direccion_creada = res_direccion.get("id_direccion")
-                    res_usuaria_direccion = service_crear_usuaria_direccion(id_usuaria_creada, id_direccion_creada)
-                    if res_usuaria_direccion.get("success"):
+                # Si no se esta editando una usuaria
+                if not self.editando_usuaria:
+                    res_direccion = service_crear_direccion(self.datos_domicilio)
+                    if res_direccion.get("success"):
+                        id_direccion_creada = res_direccion.get("id_direccion")
+                        res_usuaria_direccion = service_crear_usuaria_direccion(id_usuaria_creada, id_direccion_creada)
+                        if res_usuaria_direccion.get("success"):
+                            pass
+                        else:
+                            messagebox.showwarning("Aviso", f"Usuaria creada, pero falló el domicilio: {res_usuaria_direccion.get('error')}")
+                            return
+                    else:
+                        messagebox.showwarning("Aviso", f"Usuaria creada, pero falló el domicilio: {res_direccion.get('error')}")
+                        return
+                # Se esta editando una usuaria, pero no tiene direccion registrada
+                elif self.id_direccion_editada == 0:
+                    # Se registra una nueva direccion
+                    res_direccion_usuaria_editada = service_crear_direccion(self.datos_domicilio)
+                    if res_direccion_usuaria_editada.get("success"):
+                        id_direccion_creada_usuaria_editada = res_direccion_usuaria_editada.get("id_direccion")
+                        res_usuaria_direccion_usuaria_editada = service_crear_usuaria_direccion(self.id_usuaria_editada, id_direccion_creada_usuaria_editada)
+                        if res_usuaria_direccion_usuaria_editada.get("success"):
+                            pass
+                        else:
+                            messagebox.showwarning("Aviso", f"Usuaria actualizada, pero falló el domicilio: {res_usuaria_direccion.get('error')}")
+                            return
+                    else:
+                        messagebox.showwarning("Aviso", f"Usuaria actualizada, pero falló el domicilio: {res_direccion.get('error')}")
+                        return
+                # Se esta editando una usuaria y tiene una direccion registrada
+                else:
+                    res_actualizar_direccion = service_actualizar_direccion(self.datos_domicilio)
+                    if res_actualizar_direccion.get("success"):
                         pass
                     else:
-                        messagebox.showwarning("Aviso", f"Usuaria creada, pero falló el domicilio: {res_usuaria_direccion.get('error')}")
+                        messagebox.showwarning("Aviso", f"Usuaria actualizada, pero falló el domicilio: {res_direccion.get('error')}")
                         return
-                else:
-                    messagebox.showwarning("Aviso", f"Usuaria creada, pero falló el domicilio: {res_direccion.get('error')}")
-                    return
-
-            messagebox.showinfo("Éxito", "¡Usuaria registrada correctamente!")
+            if not self.editando_usuaria:
+                messagebox.showinfo("Éxito", "¡Usuaria registrada correctamente!")
+            else:
+                messagebox.showinfo("Éxito", "¡Información de usuaria actualizada correctamente!")
+                self.editando_usuaria = False
+                self.refrescar_boton_registrar_editar()
             self.limpiar_formulario()    
             self.mostrar_pagina(self.page1)
+
     def limpiar_formulario(self):
         self.ent_nombre.delete(0, "end")
         self.opt_escolaridad.set("Ninguna")
@@ -478,18 +612,24 @@ class RegistroUsuariaView(ctk.CTkFrame):
         
         self.ent_telefono.delete(0, "end")
         
-        self.datos_domicilio = {}
+        self.datos_domicilio = None
         self.btn_domicilio.configure(text="📍 Ingresar Domicilio...", text_color="gray", border_color="#D3D3D3", border_width=1)
         
         self.opt_civil.set("Soltera")
         
-        self.var_inmujer.set("No")
+        self.var_terapia.set("Sí")
+        self.var_immujer.set("Sí")
+        self.actualizar_campos_immujer()
+
         self.ent_cuando.delete(0, "end")
         self.ent_tipo_apoyo.delete(0, "end")
         
-        self.var_terapia.set("No")
         self.ent_tiempo.delete(0, "end")
         self.ent_lugar_terapia.delete(0, "end")
+
+        self.var_terapia.set("No")
+        self.var_immujer.set("No")
+        self.actualizar_campos_immujer()
         
         self.opt_canalizada.set("Vicefiscalía")
         
@@ -506,6 +646,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.ent_parentesco.delete(0, "end")
         self.ent_ocupacion_agresor.delete(0, "end")
         self.ent_edad_agresor.delete(0, "end")
+        self.id_usuaria_editada = 0
+        self.id_direccion_editada = 0
 
     def limpiar_entries_hijos(self, parent):
         for widget in parent.winfo_children():
@@ -549,12 +691,76 @@ class RegistroUsuariaView(ctk.CTkFrame):
             seleccion = self.usuaria_seleccionada.get()
             
             if seleccion != "":
+                self.limpiar_formulario()
                 modal.destroy()
-                nombre_usuaria = seleccion.split(" - ")[0]
-                messagebox.showinfo("Éxito", f"Datos de {nombre_usuaria} listos para cargar.")
+                nombre_usuaria, telefono_usuaria = seleccion.split(" - ")
+                datos_usuaria = service_obtener_usuaria_por_telefono(telefono_usuaria)
+                self.id_usuaria_editada = datos_usuaria.id_usuaria
+                usuaria_direccion = service_obtener_usuaria_direccion(datos_usuaria.id_usuaria)
+                datos_direccion = None
+                # Si tiene una direccion asociada
+                if usuaria_direccion != None:
+                    datos_direccion = service_obtener_direccion_por_id(usuaria_direccion["direccion_id"])
+                    self.id_direccion_editada = datos_direccion.id_direccion
+                llenar_campos_usuaria(datos_usuaria, datos_direccion)
+                messagebox.showinfo("Éxito", f"Datos de {nombre_usuaria} cargados.")
+                self.editando_usuaria = True
+                self.refrescar_boton_registrar_editar()
             else:
                 messagebox.showwarning("Atención", "Por favor, seleccione una usuaria de la lista antes de cargar.")
 
+        def set_widget_text(widget, valor):
+            valor = "" if valor is None else str(valor)
+            if isinstance(widget, ctk.CTkEntry):
+                widget.delete(0, "end")
+                widget.insert(0, valor)
+            elif isinstance(widget, ctk.CTkTextbox):
+                widget.delete("1.0", "end")
+                widget.insert("1.0", valor)
+
+        def llenar_campos_usuaria(usuaria: Usuaria, direccion: Direccion):
+            if direccion != None:
+                self.datos_domicilio = direccion
+                self.btn_domicilio.configure(text=" ✅ Domicilio guardado", text_color="black", border_color="#32CD32", border_width=2)
+            
+            if hasattr(self, 'menus_familia'):
+                for menu in self.menus_familia:
+                    menu.set("0")
+            self.limpiar_entries_hijos(self.page2)
+
+            self.var_immujer.set("Sí")
+            self.var_terapia.set("Sí")
+            self.actualizar_campos_immujer()
+            # Se llenan los campos de entrada de texto
+            set_widget_text(self.ent_nombre, usuaria.nombre)
+            set_widget_text(self.ent_lugar, usuaria.lugar_nacimiento)
+            set_widget_text(self.ent_ocupacion, usuaria.ocupacion)
+            set_widget_text(self.ent_telefono, usuaria.telefono)
+            set_widget_text(self.ent_cuando, usuaria.servicio_immujer_fecha)
+            set_widget_text(self.ent_tipo_apoyo, usuaria.servicio_immujer_id)
+            set_widget_text(self.ent_tiempo, usuaria.terapia_tiempo)
+            set_widget_text(self.ent_lugar_terapia, usuaria.terapia_lugar)
+            set_widget_text(self.ent_red_apoyo, usuaria.red_apoyo)
+            set_widget_text(self.txt_motivo, usuaria.motivo_consulta)
+            # Para agresor
+            set_widget_text(self.ent_agresor, "Alberto Ramírez")
+            set_widget_text(self.ent_parentesco, "Esposo")
+            set_widget_text(self.ent_ocupacion_agresor, "Albañil")
+            set_widget_text(self.ent_edad_agresor, 41)
+
+            # Se llenan los campos de opciones
+            self.opt_escolaridad.set(self._id_a_texto(self.escolaridades_list, "id_escolaridad", usuaria.escolaridad_id, "escolaridad"))
+            anio_u, mes_u, dia_u = usuaria.fecha_nacimiento.split("-")
+            self.opt_dia.set(dia_u)
+            num_a_meses_dict = {"01":"Ene", "02":"Feb", "03":"Mar", "04":"Abr", "05":"May", "06":"Jun", "07":"Jul", "08":"Ago", "09":"Sep", "10":"Oct", "11":"Nov", "12":"Dic"}
+            self.opt_mes.set(num_a_meses_dict[mes_u])
+            self.opt_ano.set(anio_u)
+            self.opt_sexo.set(self._id_a_texto(self.sexos_list, "id_sexo", usuaria.sexo_id, "sexo"))
+            self.opt_lengua.set(self._id_a_texto(self.lenguas_indigenas_list, "id_lengua_indigena", usuaria.lengua_indigena_id, "lengua_indigena"))
+            self.opt_civil.set(self._id_a_texto(self.estados_civiles_list, "id_estado_civil", usuaria.estado_civil_id, "estado_civil"))
+            self.opt_canalizada.set(usuaria.canalizada_por)
+
+            #self.padecimientos_seleccionados = []
+            #self.btn_padecimiento.configure(text="📍 Seleccionar padecimientos...", text_color="gray", border_color="#D3D3D3", border_width=1)
+
         ctk.CTkButton(modal, text="Cargar Datos", command=confirmar_seleccion, fg_color="#FF6B35", text_color="white", font=("Arial", 14, "bold")).pack(pady=(10, 20))
-    
-    

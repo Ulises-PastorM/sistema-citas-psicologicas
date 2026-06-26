@@ -153,6 +153,11 @@ CREATE TABLE IF NOT EXISTS estados_cita (
     estado_cita TEXT NOT NULL UNIQUE
 );
 
+CREATE TABLE IF NOT EXISTS dependencias (
+    id_dependencia INTEGER PRIMARY KEY AUTOINCREMENT,
+    dependencia TEXT NOT NULL UNIQUE
+);
+
 
 -- CATÁLOGOS
 
@@ -215,3 +220,11 @@ INSERT OR IGNORE INTO estados_cita (estado_cita) VALUES
 INSERT OR IGNORE INTO roles (rol) VALUES
 ('Administrador'),
 ('Psicologa');
+
+-- dependencias
+INSERT OR IGNORE INTO dependencias (dependencia) VALUES
+('Ninguna'),
+('Vicefiscalía'),
+('Juzgado familiar'),
+('Hospital'),
+('Otra');
