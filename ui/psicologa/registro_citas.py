@@ -135,13 +135,11 @@ class RegistroCitas(ctk.CTkFrame):
                 self.on_actualizar()
             estado_servidor_whatsapp = obtener_estado_servidor()
             if estado_servidor_whatsapp["status"] == "connected":
-                cita = service_obtener_cita_por_id(res_cita["id_cita"])
-                usuaria_info = service_obtener_usuaria_por_id(cita.usuaria_id)
-                fecha_texto = self.fecha_a_texto(fecha_str=fecha_cita)
-                msg = "¡Hola, " + usuaria_info.nombre + "!\nTu cita en IMMujer ha sido agendada.\nFecha: " + fecha_texto + "\nHora: " + cita.hora + " hrs.\n¡Te esperamos!"
-                envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, msg)
+                cita_info = service_obtener_cita_por_id(res_cita["id_cita"])
+                usuaria_info = service_obtener_usuaria_por_id(cita_info.usuaria_id)
+                envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, cita_info, "nueva_cita")
                 if envio_mensaje["success"]:
-                    service_registrar_envio_whatsapp(cita_id=cita.id_cita, mensaje=msg)
+                    service_registrar_envio_whatsapp(cita_id=cita_info.id_cita, mensaje=envio_mensaje["mensaje"])
                     messagebox.showinfo("Éxito", "¡Cita agendada correctamente!")
                 else:
                     messagebox.showwarning("Aviso", f"Cita agendada, pero falló el envío de confirmación por Whatsapp: {envio_mensaje.get('error')}")
@@ -214,9 +212,39 @@ class RegistroCitas(ctk.CTkFrame):
         lbl_mensaje.pack(pady=(5, 0))
 
         def guardar_modificacion():
-
-            lbl_mensaje.configure(text="✅ Datos modificados exitosamente", text_color="#32CD32")
-            self.after(1500, modal.destroy)
+            cita_actual = service_obtener_cita_por_id(id_cita=id_cita)
+            if ent_fecha.get() != cita_actual.fecha or ent_hora.get() != cita_actual.hora:
+                cita_modificada = Cita(
+                    ent_fecha.get(),
+                    cita_actual.usuaria_id,
+                    cita_actual.psicologa_id,
+                    ent_hora.get(),
+                    cita_actual.estado_id,
+                    cita_actual.id_cita
+                )
+                res_actualizar_cita = service_actualizar_cita(cita_modificada)
+                if res_actualizar_cita["success"]:
+                    self.refrescar_tabla()
+                    if self.on_actualizar:
+                        self.on_actualizar()
+                    estado_servidor_whatsapp = obtener_estado_servidor()
+                    if estado_servidor_whatsapp["status"] == "connected":
+                        usuaria_info =  service_obtener_usuaria_por_id(cita_actual.usuaria_id)
+                        envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, cita_modificada, "reagendar_cita")
+                        if envio_mensaje["success"]:
+                            service_registrar_envio_whatsapp(cita_id=cita_modificada.id_cita, mensaje=envio_mensaje["mensaje"])
+                            lbl_mensaje.configure(text="✅ Cita actualizada correctamente", text_color="#32CD32")
+                        else:
+                            lbl_mensaje.configure(text="Cita actualizada, pero error al enviar notificación: " + envio_mensaje["error"], text_color="#B65F18")
+                    else:
+                        lbl_mensaje.configure(text="Cita actualizada, pero error al enviar notificación: No se pudo conectar con el servidor de Whatsapp", text_color="#B65F18")
+                    self.after(1500, modal.destroy)
+                else:
+                    lbl_mensaje.configure(text="Ha ocurrido un error: " + res_actualizar_cita["error"], text_color="#A80A0A")
+                    self.after(1500, modal.destroy)
+            else:
+                # No hubo cambios
+                self.after(500, modal.destroy)
 
         btn_guardar = ctk.CTkButton(modal, text="Aceptar modificación", command=guardar_modificacion, fg_color="#FF6B35", hover_color="#E55B2B", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=40)
         btn_guardar.pack(pady=(10, 20))

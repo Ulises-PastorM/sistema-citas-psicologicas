@@ -1,6 +1,8 @@
 import requests
+from datetime import datetime
 from repositories.usuarias_repository import obtener_usuarias
 from models.usuaria_model import Usuaria
+from models.cita_model import Cita
 
 # URL base del servidor WhatsApp local
 WHATSAPP_SERVER_URL = "http://localhost:3000"
@@ -14,8 +16,20 @@ def obtener_estado_servidor() -> dict:
     except requests.exceptions.ConnectionError:
         return {"status": "error", "detail": "No se pudo conectar al servidor WhatsApp."}
 
+def fecha_a_texto(fecha_str: str) -> str:
+    meses = [
+        "enero", "febrero", "marzo", "abril",
+        "mayo", "junio", "julio", "agosto",
+        "septiembre", "octubre", "noviembre", "diciembre"
+    ]
 
-def enviar_mensaje_a_usuaria(usuaria: Usuaria, mensaje: str) -> dict:
+    try:
+        fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
+        return f"{fecha.day} de {meses[fecha.month - 1]} de {fecha.year}"
+    except ValueError:
+        raise ValueError("La fecha debe tener el formato AAAA-MM-DD")
+
+def enviar_mensaje_a_usuaria(usuaria: Usuaria, cita: Cita, tipo_mensaje: str) -> dict:
     """
     Envía un mensaje de WhatsApp a una usuaria.
 
@@ -30,6 +44,18 @@ def enviar_mensaje_a_usuaria(usuaria: Usuaria, mensaje: str) -> dict:
     if not usuaria.telefono:
         return {"success": False, "error": f"La usuaria '{usuaria.nombre}' no tiene teléfono registrado."}
 
+    if tipo_mensaje == "nueva_cita":
+        mensaje = "¡Hola, " + usuaria.nombre + "!\nTu cita en IMMujer ha sido agendada.\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n¡Te esperamos!"
+    elif tipo_mensaje == "reagendar_cita":
+        mensaje = "¡Hola, " + usuaria.nombre + "!\nTu cita en IMMujer ha sido actualizada.\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n¡Te esperamos!"
+    elif tipo_mensaje == "cancelar_cita":
+        mensaje = "¡Hola, " + usuaria.nombre + "!\nTu cita en IMMujer ha sido cancelada.\n¡No te preocupes! Nos pondremos en contacto contigo para agendar una nueva cita.\n¡Te esperamos!"
+    elif tipo_mensaje == "recordatorio_cita":
+        mensaje =  "¡Hola, " + usuaria.nombre + "!\nTe recordamos que tienes una cita en IMMujer.\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n¡Te esperamos!"
+    else:
+        return {"success": False, "error": "Tipo de mensaje no válido."}
+
+
     try:
         response = requests.post(
             f"{WHATSAPP_SERVER_URL}/send-message",
@@ -39,7 +65,7 @@ def enviar_mensaje_a_usuaria(usuaria: Usuaria, mensaje: str) -> dict:
         data = response.json()
 
         if response.status_code == 200 and data.get("success"):
-            return {"success": True, "nombre": usuaria.nombre, "telefono": usuaria.telefono_limpio()}
+            return {"success": True, "nombre": usuaria.nombre, "mensaje": mensaje}
         else:
             return {"success": False, "nombre": usuaria.nombre, "error": data.get("error", "Error desconocido")}
 
