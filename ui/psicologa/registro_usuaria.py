@@ -3,7 +3,7 @@ from tkinter import messagebox
 from datetime import datetime
 from models.usuaria_model import Usuaria
 from models.direccion_model import Direccion
-from services.usuarias_services import service_crear_usuaria, service_crear_usuaria_direccion
+from services.usuarias_services import service_crear_usuaria, service_crear_usuaria_direccion, service_obtener_usuarias
 from services.direcciones_services import service_crear_direccion
 
 class RegistroUsuariaView(ctk.CTkFrame):
@@ -23,6 +23,9 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         self.lbl_titulo = ctk.CTkLabel(self, text="Registro de Usuaria para Atención Psicológica", font=("Arial", 20, "bold", "italic"), text_color="#006B4D")
         self.lbl_titulo.grid(row=0, column=0, pady=(0, 10), sticky="w")
+        
+        self.btn_buscar_usuaria = ctk.CTkButton(self, text="Cargar datos de Usuaria", command=self.abrir_modal_busqueda, fg_color="#7A1B6C", font=("Arial", 14, "bold"), text_color="white", hover_color="#FF6B35")
+        self.btn_buscar_usuaria.grid(row=0, column=0, pady=(0, 10), sticky="e")
 
         self.card_frame = ctk.CTkFrame(self, fg_color="#F4F4F4", corner_radius=15)
         self.card_frame.grid(row=1, column=0, sticky="nsew")
@@ -510,3 +513,48 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 widget.delete(0, "end")
             elif isinstance(widget, ctk.CTkFrame):
                 self.limpiar_entries_hijos(widget)
+                
+    def abrir_modal_busqueda(self):
+        modal = ctk.CTkToplevel(self)
+        modal.title("Buscar Usuaria")
+        modal.geometry("400x400") 
+        modal.transient(self.winfo_toplevel())
+        modal.grab_set()
+
+        ctk.CTkLabel(modal, text="Seleccione una usuaria:", font=("Arial", 14, "bold"), text_color="#006B4D").pack(pady=(15, 5))
+
+        scroll_frame = ctk.CTkScrollableFrame(modal, fg_color="white", border_width=1, border_color="#D3D3D3")
+        scroll_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+        self.usuaria_seleccionada = ctk.StringVar(value="")
+
+        usuarias_bd = service_obtener_usuarias()
+        nombres_db = []
+        for u in usuarias_bd:
+            nombres_db.append(u.nombre + " - " + u.telefono)
+
+        for nombre in nombres_db:
+            rb = ctk.CTkRadioButton(
+                scroll_frame, 
+                text=nombre, 
+                variable=self.usuaria_seleccionada, 
+                value=nombre,
+                fg_color="#7A1B6C",     
+                hover_color="#E55A2B",  
+                text_color="black"
+            )
+            rb.pack(anchor="w", pady=8, padx=10)
+
+        def confirmar_seleccion():
+            seleccion = self.usuaria_seleccionada.get()
+            
+            if seleccion != "":
+                modal.destroy()
+                nombre_usuaria = seleccion.split(" - ")[0]
+                messagebox.showinfo("Éxito", f"Datos de {nombre_usuaria} listos para cargar.")
+            else:
+                messagebox.showwarning("Atención", "Por favor, seleccione una usuaria de la lista antes de cargar.")
+
+        ctk.CTkButton(modal, text="Cargar Datos", command=confirmar_seleccion, fg_color="#FF6B35", text_color="white", font=("Arial", 14, "bold")).pack(pady=(10, 20))
+    
+    
