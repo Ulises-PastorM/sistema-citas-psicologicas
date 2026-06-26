@@ -61,6 +61,17 @@ class Sidebar(ctk.CTkFrame):
         # Aplicar hover
         for nombre, btn in self.botones.items():
             self.aplicar_efecto_hover(btn, nombre)
+            
+        self.btn_creditos = ctk.CTkButton(
+            self, 
+            text="Acerca del Sistema", 
+            fg_color="transparent", 
+            text_color="#7A1B6C", 
+            font=("Arial", 12, "underline"), 
+            hover_color="#D3D3D3", 
+            command=self.mostrar_creditos
+        )
+        self.btn_creditos.grid(row=6, column=0, padx=20, pady=(0, 20), sticky="s")
 
     def navegar(self, vista_nombre):
         self.set_active(vista_nombre) 
@@ -85,3 +96,30 @@ class Sidebar(ctk.CTkFrame):
                 
         boton.bind("<Enter>", on_enter)
         boton.bind("<Leave>", on_leave)
+        
+    def mostrar_creditos(self):
+        modal = ctk.CTkToplevel(self)
+        modal.title("Acerca del Sistema")
+        modal.geometry("450x320")
+        modal.resizable(False, False)
+        modal.transient(self.winfo_toplevel())
+        modal.grab_set()
+
+        ctk.CTkLabel(modal, text="Sistema de Gestión - IMMUJER", font=("Arial", 16, "bold"), text_color="#7A1B6C").pack(pady=(20, 10))
+
+        info_texto = (
+            "Este sistema fue desarrollado como parte del proyecto de\n"
+            "Servicio Social de la carrera\n"
+            "de Ingeniería en Computación.\n\n"
+            "Desarrolladores:\n"
+            "  Leonardo Roque Hernández\n"
+            "  Contacto: leonardoroque711@gmail.com\n"
+            "  Ulises Pastor Martínez\n"
+            "  Contacto: pmudev14@gmail.com\n\n"
+            "Desarrollado para:\n"
+            "INSTANCIA MUNICIPAL DE LA MUJER."
+        )
+
+        ctk.CTkLabel(modal, text=info_texto, font=("Arial", 13), justify="center").pack(pady=10)
+
+        ctk.CTkButton(modal, text="Cerrar", command=modal.destroy, fg_color="#FF6B35", text_color="white").pack(pady=(10, 20))
