@@ -7,6 +7,7 @@ from ui.psicologa.calendario import CalendarioView
 from ui.psicologa.registro_usuaria import RegistroUsuariaView
 from ui.login.login_view import LoginView 
 from ui.psicologa.observaciones import ObservacionesView 
+from ui.psicologa.mi_cuenta import MiCuentaView
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -63,11 +64,13 @@ class MainWindow(ctk.CTk):
         self.vista_registro = RegistroCitas(self.vistas_frame, on_actualizar=self.actualizar_vistas_dependientes)
         self.vista_usuaria = RegistroUsuariaView(self.vistas_frame)
         self.vista_observacion = ObservacionesView(self.vistas_frame)
+        self.vista_cuenta = MiCuentaView(self.vistas_frame)
 
         self.vista_registro.grid(row=0, column=0, sticky="nsew")
         self.vista_calendario.grid(row=0, column=0, sticky="nsew")
         self.vista_usuaria.grid(row=0, column=0, sticky="nsew")
         self.vista_observacion.grid(row=0, column=0, sticky="nsew")
+        self.vista_cuenta.grid(row=0, column=0, sticky="nsew")
 
         self.sidebar.navegar("registro")
 
@@ -77,6 +80,7 @@ class MainWindow(ctk.CTk):
 
     def cambiar_vista(self, nombre_vista):
         if nombre_vista == "registro":
+            self.vista_registro.refrescar_usuarias()
             self.vista_registro.tkraise()
         elif nombre_vista == "calendario":
             self.vista_calendario.tkraise()
@@ -84,6 +88,8 @@ class MainWindow(ctk.CTk):
             self.vista_usuaria.tkraise()
         elif nombre_vista == "observaciones":
             self.vista_observacion.tkraise()
+        elif nombre_vista == "cuenta":            
+            self.vista_cuenta.tkraise()
             
     def cerrar_sesion(self):
         for widget in self.winfo_children():

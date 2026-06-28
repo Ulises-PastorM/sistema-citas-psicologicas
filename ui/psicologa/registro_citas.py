@@ -49,12 +49,10 @@ class RegistroCitas(ctk.CTkFrame):
 
         ctk.CTkLabel(self.card_frame, text="Seleccionar Usuaria:", **lbl_kwargs).grid(row=4, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
         
-        usuarias = service_obtener_usuarias()
-        lista_usuarias = []
-        for u in usuarias:
-            lista_usuarias.append(u.nombre + " - " + u.telefono)
-        self.opt_usuaria = ctk.CTkOptionMenu(self.card_frame, values=lista_usuarias, **opt_kwargs)
+        self.opt_usuaria = ctk.CTkOptionMenu(self.card_frame, values=[], **opt_kwargs)
+        self.opt_usuaria.set("Seleccione una usuaria...")
         self.opt_usuaria.grid(row=5, column=0, padx=(20, 10), pady=(2, 10), sticky="ew")
+        self.refrescar_usuarias()
 
         ctk.CTkLabel(self.card_frame, text="Fecha 📅:", **lbl_kwargs).grid(row=4, column=1, padx=(10, 20), pady=(10, 0), sticky="w")
         
@@ -270,3 +268,15 @@ class RegistroCitas(ctk.CTkFrame):
                 btn_editar = ctk.CTkButton(row_frame, text="Editar ✏️", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, 
                                         command=lambda f=fila: self.abrir_modal_editar(f))
                 btn_editar.grid(row=0, column=5, pady=8)
+    
+    def refrescar_usuarias(self):
+        usuarias = service_obtener_usuarias()
+        lista_usuarias = []
+        for u in usuarias:
+            lista_usuarias.append(u.nombre + " - " + u.telefono)
+
+        if lista_usuarias:
+            self.opt_usuaria.configure(values=lista_usuarias)
+        else:
+            self.opt_usuaria.configure(values=["No hay usuarias"])
+            self.opt_usuaria.set("No hay usuarias")

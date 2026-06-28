@@ -58,9 +58,30 @@ class Sidebar(ctk.CTkFrame):
             "observaciones": self.btn_observaciones
         }
 
-        # Aplicar hover
         for nombre, btn in self.botones.items():
             self.aplicar_efecto_hover(btn, nombre)
+            
+        self.separador = ctk.CTkFrame(self, height=1, fg_color="#D3D3D3")
+        self.separador.grid(row=6, column=0, padx=20, pady=(0, 15), sticky="ew")
+
+        icono_cuenta = ctk.CTkImage(light_image=Image.open("assets/ic_userP.png"), size=(20, 20))
+
+        self.btn_cuenta = ctk.CTkButton(
+            self,
+            text=" Ver mi Cuenta      >", 
+            image=icono_cuenta,              
+            compound="left",                 
+            fg_color="transparent",
+            text_color="#FF6B35",
+            border_color="#FF6B35",
+            border_width=1,
+            hover_color="#FFF0EB",
+            font=("Arial", 14, "bold"),
+            corner_radius=8,
+            height=40,
+            command=lambda: self.navegar("cuenta") 
+        )
+        self.btn_cuenta.grid(row=7, column=0, padx=20, pady=(0, 15), sticky="ew")
             
         self.btn_creditos = ctk.CTkButton(
             self, 
@@ -71,7 +92,7 @@ class Sidebar(ctk.CTkFrame):
             hover_color="#D3D3D3", 
             command=self.mostrar_creditos
         )
-        self.btn_creditos.grid(row=6, column=0, padx=20, pady=(0, 20), sticky="s")
+        self.btn_creditos.grid(row=8, column=0, padx=20, pady=(0, 20), sticky="s")
 
     def navegar(self, vista_nombre):
         self.set_active(vista_nombre) 
@@ -108,9 +129,9 @@ class Sidebar(ctk.CTkFrame):
         ctk.CTkLabel(modal, text="Sistema de Gestión - IMMUJER", font=("Arial", 16, "bold"), text_color="#7A1B6C").pack(pady=(20, 10))
 
         info_texto = (
-            "Este sistema fue desarrollado como parte del proyecto de\n"
-            "Servicio Social de la carrera\n"
-            "de Ingeniería en Computación.\n\n"
+            "Este sistema fue desarrollado como proyecto\n"
+            "de Servicio Social por estudiantes de Ingeniería en Computación\n"
+            "de la Universidad Tecnológica de la Mixteca.\n\n"
             "Desarrolladores:\n"
             "  Leonardo Roque Hernández\n"
             "  Contacto: leonardoroque711@gmail.com\n"

@@ -55,8 +55,9 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.lbl_titulo = ctk.CTkLabel(self, text="Registro de Usuaria para Atención Psicológica", font=("Arial", 20, "bold", "italic"), text_color="#006B4D")
         self.lbl_titulo.grid(row=0, column=0, pady=(0, 10), sticky="w")
         
-        self.btn_buscar_usuaria = ctk.CTkButton(self, text="Cargar datos de Usuaria", command=self.abrir_modal_busqueda, fg_color="#7A1B6C", font=("Arial", 14, "bold"), text_color="white", hover_color="#FF6B35")
-        self.btn_buscar_usuaria.grid(row=0, column=0, pady=(0, 10), sticky="e")
+        self.btn_volver_inicio = ctk.CTkButton(self, text=" 🡨 Volver a opciones", command=self.volver_al_inicio, fg_color="#FF6B35", font=("Arial", 14, "bold"), text_color="white")
+        self.btn_volver_inicio.grid(row=0, column=0, pady=(0, 10), sticky="e")
+        self.btn_volver_inicio.grid_remove() # Lo ocultamos inicialmente
 
         self.card_frame = ctk.CTkFrame(self, fg_color="#F4F4F4", corner_radius=15)
         self.card_frame.grid(row=1, column=0, sticky="nsew")
@@ -96,23 +97,78 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.vcmd_numeros = (self.register(self.solo_numeros), '%P')
 
         self.cargar_catalogos()
+        self.crear_pagina_inicio()
         self.crear_pagina_1()
         self.crear_pagina_2()
         self.crear_pagina_3()
 
-        self.mostrar_pagina(self.page1)
+        self.mostrar_pagina(self.page_inicio)
 
     def solo_numeros(self, texto_propuesto):
         return texto_propuesto.isdigit() or texto_propuesto == ""
 
     def mostrar_pagina(self, pagina):
         # Ocultamos todas las páginas de la cuadrícula
+        if hasattr(self, 'page_inicio'): self.page_inicio.grid_forget()
         if hasattr(self, 'page1'): self.page1.grid_forget()
         if hasattr(self, 'page2'): self.page2.grid_forget()
         if hasattr(self, 'page3'): self.page3.grid_forget()
         
         # Solo volvemos a dibujar la que queremos ver
         pagina.grid(row=0, column=0, sticky="nsew", padx=30, pady=15)
+    
+    def crear_pagina_inicio(self):
+        self.page_inicio = ctk.CTkFrame(self.card_frame, fg_color="transparent")
+        self.page_inicio.grid_columnconfigure((0, 1), weight=1)
+        self.page_inicio.grid_rowconfigure(0, weight=1)
+
+        contenedor_botones = ctk.CTkFrame(self.page_inicio, fg_color="transparent")
+        contenedor_botones.grid(row=0, column=0, columnspan=2, pady=180)
+        contenedor_botones.grid_columnconfigure((0, 1), weight=1)
+        from PIL import Image
+        icono_registro = ctk.CTkImage(light_image=Image.open("assets/add.png"), size=(60, 60))
+        icono_actualizar = ctk.CTkImage(light_image=Image.open("assets/edit.png"), size=(60, 60))
+
+        btn_registrar = ctk.CTkButton(
+            contenedor_botones,
+            text="Registrar Nueva Usuaria", 
+            font=("Arial", 18, "bold"),
+            fg_color="#006B4D",
+            hover_color="#004E38", 
+            text_color="white",
+            height=120,
+            width=360,
+            corner_radius=15,
+            image=icono_registro, 
+            command=self.iniciar_registro_nuevo
+        )
+        btn_registrar.grid(row=0, column=0, padx=(0, 20), sticky="e")
+
+        btn_actualizar = ctk.CTkButton(
+            contenedor_botones,
+            text="Actualizar Datos de Usuaria", 
+            font=("Arial", 18, "bold"),
+            fg_color="#FF6B35",
+            hover_color="#CC552A", 
+            text_color="white",
+            height=120,
+            width=360,
+            corner_radius=15,
+            image=icono_actualizar, 
+            command=self.abrir_modal_busqueda
+        )
+        btn_actualizar.grid(row=0, column=1, padx=(20, 0), sticky="w")
+
+    def iniciar_registro_nuevo(self):
+        self.editando_usuaria = False
+        self.limpiar_formulario()
+        self.refrescar_boton_registrar_editar()
+        self.btn_volver_inicio.grid()
+        self.mostrar_pagina(self.page1) 
+
+    def volver_al_inicio(self):
+        self.btn_volver_inicio.grid_remove()
+        self.mostrar_pagina(self.page_inicio)
 
     def crear_campo_entrada(self, parent, texto_label, ancho=None, validacion=None):
         frame = ctk.CTkFrame(parent, fg_color="transparent")
@@ -183,7 +239,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         
         f_fec = ctk.CTkFrame(self.page1, fg_color="transparent")
         f_fec.grid(row=2, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
-        ctk.CTkLabel(f_fec, text="Fecha de nacimiento 📅:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(f_fec, text="Fecha de nacimiento:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
         
         f_fec_inputs = ctk.CTkFrame(f_fec, fg_color="transparent")
         f_fec_inputs.pack(fill="x", expand=True)
@@ -590,7 +646,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 self.editando_usuaria = False
                 self.refrescar_boton_registrar_editar()
             self.limpiar_formulario()    
-            self.mostrar_pagina(self.page1)
+            self.volver_al_inicio()
 
     def limpiar_formulario(self):
         self.ent_nombre.delete(0, "end")
@@ -698,7 +754,6 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 self.id_usuaria_editada = datos_usuaria.id_usuaria
                 usuaria_direccion = service_obtener_usuaria_direccion(datos_usuaria.id_usuaria)
                 datos_direccion = None
-                # Si tiene una direccion asociada
                 if usuaria_direccion != None:
                     datos_direccion = service_obtener_direccion_por_id(usuaria_direccion["direccion_id"])
                     self.id_direccion_editada = datos_direccion.id_direccion
@@ -706,6 +761,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 messagebox.showinfo("Éxito", f"Datos de {nombre_usuaria} cargados.")
                 self.editando_usuaria = True
                 self.refrescar_boton_registrar_editar()
+                self.btn_volver_inicio.grid()
+                self.mostrar_pagina(self.page1)
             else:
                 messagebox.showwarning("Atención", "Por favor, seleccione una usuaria de la lista antes de cargar.")
 
@@ -731,7 +788,6 @@ class RegistroUsuariaView(ctk.CTkFrame):
             self.var_immujer.set("Sí")
             self.var_terapia.set("Sí")
             self.actualizar_campos_immujer()
-            # Se llenan los campos de entrada de texto
             set_widget_text(self.ent_nombre, usuaria.nombre)
             set_widget_text(self.ent_lugar, usuaria.lugar_nacimiento)
             set_widget_text(self.ent_ocupacion, usuaria.ocupacion)
@@ -748,7 +804,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
             set_widget_text(self.ent_ocupacion_agresor, "Albañil")
             set_widget_text(self.ent_edad_agresor, 41)
 
-            # Se llenan los campos de opciones
+
             self.opt_escolaridad.set(self._id_a_texto(self.escolaridades_list, "id_escolaridad", usuaria.escolaridad_id, "escolaridad"))
             anio_u, mes_u, dia_u = usuaria.fecha_nacimiento.split("-")
             self.opt_dia.set(dia_u)
