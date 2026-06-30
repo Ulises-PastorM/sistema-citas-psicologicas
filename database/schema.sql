@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS citas (
 	"id_cita"	INTEGER,
 	"fecha"	TEXT NOT NULL,
 	"hora"	TEXT,
-	"estado_id"	TEXT,
+	"estado_id"	INTEGER,
 	"usuaria_id"	INTEGER NOT NULL,
 	"psicologa_id"	INTEGER NOT NULL,
 	PRIMARY KEY("id_cita" AUTOINCREMENT)
@@ -211,7 +211,6 @@ INSERT OR IGNORE INTO estatus (estatus) VALUES
 -- estados cita
 INSERT OR IGNORE INTO estados_cita (estado_cita) VALUES
 ('Programada'),
-('Confirmada'),
 ('Atendida'),
 ('Cancelada'),
 ('No asistió');

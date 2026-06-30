@@ -6,6 +6,9 @@ from services.usuarias_services import service_obtener_usuarias, service_obtener
 from services.whatsapp_services import enviar_mensaje_a_usuaria, obtener_estado_servidor
 from services.notificaciones_services import service_registrar_envio_whatsapp
 from models.cita_model import Cita
+from repositories.catalogos_repository import (
+    obtener_estados_cita
+)
 
 class RegistroCitas(ctk.CTkFrame):
     def __init__(self, master, on_actualizar=None):
@@ -29,6 +32,7 @@ class RegistroCitas(ctk.CTkFrame):
         self.tabla_header.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
         self.tabla_header.pack_propagate(False)
         
+        self.estados_cita_list = None
         columnas = ["Nombre", "Fecha", "Telefono", "Hora", "Estatus", "Editar"]
         for i, col in enumerate(columnas):
             lbl = ctk.CTkLabel(self.tabla_header, text=col, text_color="white", font=("Arial", 13, "bold"), anchor="center")
@@ -37,6 +41,7 @@ class RegistroCitas(ctk.CTkFrame):
         self.scroll_tabla = ctk.CTkScrollableFrame(self.card_frame, fg_color="transparent", height=160)
         self.scroll_tabla.grid(row=2, column=0, columnspan=2, padx=15, pady=(0, 10), sticky="ew")
 
+        self.cargar_catalogos()
         self.refrescar_tabla()
 
         self.lbl_subtitulo2 = ctk.CTkLabel(self.card_frame, text="Registrar Nueva Cita", font=("Arial", 16, "bold", "italic"), text_color="#006B4D")
@@ -135,7 +140,7 @@ class RegistroCitas(ctk.CTkFrame):
             if estado_servidor_whatsapp["status"] == "connected":
                 cita_info = service_obtener_cita_por_id(res_cita["id_cita"])
                 usuaria_info = service_obtener_usuaria_por_id(cita_info.usuaria_id)
-                envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, cita_info, "nueva_cita")
+                envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, cita_info, "cita_agendada")
                 if envio_mensaje["success"]:
                     service_registrar_envio_whatsapp(cita_id=cita_info.id_cita, mensaje=envio_mensaje["mensaje"])
                     messagebox.showinfo("Éxito", "¡Cita agendada correctamente!")
@@ -170,6 +175,17 @@ class RegistroCitas(ctk.CTkFrame):
         except ValueError:
             raise ValueError("La fecha debe tener el formato AAAA-MM-DD")
 
+    def cargar_catalogos(self):
+        try:
+            self.estados_cita_list = obtener_estados_cita()
+        except Exception as e:
+            print(f"[cargar_catalogos] Error al cargar catálogos: {e}")
+            return
+        
+    def _texto_a_id(self, lista, attr_texto, valor_texto, attr_id) -> int | None:
+        item = next((x for x in lista if getattr(x, attr_texto) == valor_texto), None)
+        return getattr(item, attr_id) if item else 1
+
     def abrir_modal_editar(self, datos_fila):
         nombre, fecha, telefono, hora, estatus, id_cita = datos_fila
 
@@ -201,8 +217,9 @@ class RegistroCitas(ctk.CTkFrame):
         ent_fecha = crear_input_modal("Fecha:", fecha, editable=True)
         ent_hora = crear_input_modal("Hora (HH:MM):", hora, editable=True)
         
+        estados_cita = [e.estado_cita for e in self.estados_cita_list]
         ctk.CTkLabel(modal, text="Estatus:", font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40)
-        opt_estatus = ctk.CTkOptionMenu(modal, values=["Activa", "Completada", "Cancelada"], fg_color="white", text_color="black", button_color="#E6E6E6", button_hover_color="#D3D3D3", dropdown_fg_color="white", dropdown_text_color="black", corner_radius=6, height=35)
+        opt_estatus = ctk.CTkOptionMenu(modal, values=estados_cita, fg_color="white", text_color="black", button_color="#E6E6E6", button_hover_color="#D3D3D3", dropdown_fg_color="white", dropdown_text_color="black", corner_radius=6, height=35)
         opt_estatus.set(estatus) 
         opt_estatus.pack(fill="x", padx=40, pady=(0, 10))
 
@@ -211,13 +228,60 @@ class RegistroCitas(ctk.CTkFrame):
 
         def guardar_modificacion():
             cita_actual = service_obtener_cita_por_id(id_cita=id_cita)
+            nuevo_estado_cita = self._texto_a_id(self.estados_cita_list, "estado_cita", opt_estatus.get(), "id_estado_cita")
+            tipo_mensaje = "cita_actualizada"
+
+            if opt_estatus.get() != estatus and nuevo_estado_cita != 1: # Si se cambió el estatus y el nuevo estatus no es 1 -> "Programada"
+                # Se ignoran los cambios en fecha y hora
+                cita_modificada = Cita(
+                    cita_actual.fecha,
+                    cita_actual.usuaria_id,
+                    cita_actual.psicologa_id,
+                    cita_actual.hora,
+                    nuevo_estado_cita,
+                    cita_actual.id_cita
+                )
+
+                confirmacion = messagebox.askyesno("Actualizar Cita", f"¿Está segura de que desea marcar la cita como {opt_estatus.get()}?")
+        
+                if not confirmacion:
+                    return
+                
+                if nuevo_estado_cita == 2: # Atendida
+                    tipo_mensaje = "cita_atendida"
+                elif nuevo_estado_cita == 3: # Cancelada
+                    tipo_mensaje = "cita_cancelada"
+                elif nuevo_estado_cita == 4: # Usuaria No asistió
+                    tipo_mensaje = "no_asistio"
+                
+                res_actualizar_cita = service_actualizar_cita(cita_modificada)
+                if res_actualizar_cita["success"]:
+                    self.refrescar_tabla()
+                    if self.on_actualizar:
+                        self.on_actualizar()
+                    estado_servidor_whatsapp = obtener_estado_servidor()
+                    if estado_servidor_whatsapp["status"] == "connected":
+                        usuaria_info =  service_obtener_usuaria_por_id(cita_actual.usuaria_id)
+                        envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, cita_modificada, tipo_mensaje)
+                        if envio_mensaje["success"]:
+                            service_registrar_envio_whatsapp(cita_id=cita_modificada.id_cita, mensaje=envio_mensaje["mensaje"])
+                            lbl_mensaje.configure(text="✅ Cita actualizada correctamente", text_color="#32CD32")
+                        else:
+                            lbl_mensaje.configure(text="Cita actualizada, pero error al enviar notificación: " + envio_mensaje["error"], text_color="#B65F18")
+                    else:
+                        lbl_mensaje.configure(text="Cita actualizada, pero error al enviar notificación: No se pudo conectar con el servidor de Whatsapp", text_color="#B65F18")
+                    self.after(1500, modal.destroy)
+                else:
+                    lbl_mensaje.configure(text="Ha ocurrido un error: " + res_actualizar_cita["error"], text_color="#A80A0A")
+                    self.after(1500, modal.destroy)
+
             if ent_fecha.get() != cita_actual.fecha or ent_hora.get() != cita_actual.hora:
                 cita_modificada = Cita(
                     ent_fecha.get(),
                     cita_actual.usuaria_id,
                     cita_actual.psicologa_id,
                     ent_hora.get(),
-                    cita_actual.estado_id,
+                    nuevo_estado_cita,
                     cita_actual.id_cita
                 )
                 res_actualizar_cita = service_actualizar_cita(cita_modificada)
@@ -228,7 +292,7 @@ class RegistroCitas(ctk.CTkFrame):
                     estado_servidor_whatsapp = obtener_estado_servidor()
                     if estado_servidor_whatsapp["status"] == "connected":
                         usuaria_info =  service_obtener_usuaria_por_id(cita_actual.usuaria_id)
-                        envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, cita_modificada, "reagendar_cita")
+                        envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, cita_modificada, tipo_mensaje)
                         if envio_mensaje["success"]:
                             service_registrar_envio_whatsapp(cita_id=cita_modificada.id_cita, mensaje=envio_mensaje["mensaje"])
                             lbl_mensaje.configure(text="✅ Cita actualizada correctamente", text_color="#32CD32")
@@ -244,7 +308,7 @@ class RegistroCitas(ctk.CTkFrame):
                 # No hubo cambios
                 self.after(500, modal.destroy)
 
-        btn_guardar = ctk.CTkButton(modal, text="Aceptar modificación", command=guardar_modificacion, fg_color="#FF6B35", hover_color="#E55B2B", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=40)
+        btn_guardar = ctk.CTkButton(modal, text="Guardar cambios", command=guardar_modificacion, fg_color="#FF6B35", hover_color="#E55B2B", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=40)
         btn_guardar.pack(pady=(10, 20))
         
     def refrescar_tabla(self):
@@ -254,14 +318,14 @@ class RegistroCitas(ctk.CTkFrame):
         datos_ejemplo = service_obtener_citas_usuarias()
 
         for fila in datos_ejemplo:
-            if fila[4] == "Activa":
+            if fila[4] == "Programada":
                 row_frame = ctk.CTkFrame(self.scroll_tabla, fg_color="white", border_width=1, border_color="#E0E0E0", corner_radius=6, height=40)
                 row_frame.pack(fill="x", pady=3, padx=5)
                 row_frame.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
                 row_frame.grid_propagate(False)
 
                 for i in range(5):
-                    color_texto = "#32CD32" if fila[4] == "Activa" and i == 4 else "black"
+                    color_texto = "#32CD32" if fila[4] == "Programada" and i == 4 else "black"
                     lbl_dato = ctk.CTkLabel(row_frame, text=self.fecha_a_texto(fila[i]) if i == 1 else fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
                     lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
                 

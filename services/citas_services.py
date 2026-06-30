@@ -9,8 +9,9 @@ from repositories.citas_repository import (
     eliminar_cita,
 )
 from services.usuarias_services import service_obtener_usuaria_basico
-
-#ESTADOS_VALIDOS = {"pendiente", "confirmada", "cancelada", "completada"}
+from repositories.catalogos_repository import (
+    obtener_estados_cita
+)
 
 
 def service_crear_cita(cita: Cita) -> dict:
@@ -104,24 +105,23 @@ def service_eliminar_cita(id_cita: int) -> dict:
 def service_obtener_citas_usuarias():
     try:
         citas = obtener_citas()
+        estados_cita_list = obtener_estados_cita()
         citas_usuarias = []
         for c in citas:
             u = service_obtener_usuaria_basico(c.usuaria_id)
-            if c.estado_id == '1':
-                estatus = "Activa"
-            elif c.estado_id == '2':
-                estatus = "Completada"
-            elif c.estado_id == '3':
-                estatus = "Cancelada"
             citas_usuarias.append([
                 u[0],
                 c.fecha,
                 u[1],
                 c.hora,
-                estatus,
+                _id_a_texto(estados_cita_list, "id_estado_cita", c.estado_id, "estado_cita"),
                 c.id_cita
             ])
         return citas_usuarias
     except Exception as e:
         print(f"[citas_service] Error al obtener citas: {e}")
         return []
+
+def _id_a_texto(lista, attr_id, valor_id, attr_texto) -> str:
+    item = next((x for x in lista if getattr(x, attr_id) == valor_id), None)
+    return getattr(item, attr_texto) if item else "Sin especificar"

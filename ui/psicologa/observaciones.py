@@ -63,14 +63,14 @@ class ObservacionesView(ctk.CTkFrame):
         datos_ejemplo = service_obtener_citas_usuarias()
 
         for fila in datos_ejemplo:
-            if fila[4] == "Activa" or fila[4] == "Completada":
+            if fila[4] == "Programada" or fila[4] == "Atendida":
                 row_frame = ctk.CTkFrame(self.scroll_tabla, fg_color="white", border_width=1, border_color="#E0E0E0", corner_radius=6, height=40)
                 row_frame.pack(fill="x", pady=3, padx=5)
                 row_frame.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
                 row_frame.grid_propagate(False)
 
                 for i in range(5):
-                    color_texto = "#32CD32" if fila[4] == "Activa" and i == 4 else "black"
+                    color_texto = "#32CD32" if fila[4] == "Programada" and i == 4 else "black"
                     lbl_dato = ctk.CTkLabel(row_frame, text=self.fecha_a_texto(fila[i]) if i == 1 else fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
                     lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
                 

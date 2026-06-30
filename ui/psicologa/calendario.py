@@ -224,9 +224,10 @@ class CalendarioView(ctk.CTkFrame):
         citas_raw = service_obtener_citas_usuarias()
 
         colores = {
-            "Activa": "#32CD32",       
-            "Completada": "#7A1B6C",   
-            "Cancelada": "#FF6B35"     
+            "Programada": "#32CD32",       
+            "Atendida": "#585EB8",   
+            "Cancelada": "#FF6B35",
+            "No asistió": "#AA1E1E"
         }
 
         for cita in citas_raw:
