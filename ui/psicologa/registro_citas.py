@@ -112,6 +112,13 @@ class RegistroCitas(ctk.CTkFrame):
         
         meses_dict = {"Enero": "01", "Febrero": "02", "Marzo": "03", "Abril": "04", "Mayo": "05", "Junio": "06", "Julio": "07", "Agosto": "08", "Septiembre": "09", "Octubre": "10", "Noviembre": "11", "Diciembre": "12"}
         fecha_cita = f"{anio}-{meses_dict[mes]}-{dia}"
+        
+        try:
+            datetime.strptime(fecha_cita, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showwarning("Fecha inválida", f"La fecha seleccionada ({dia} de {mes} de {anio}) no existe en el calendario.")
+            return
+        
         hora_cita = f"{hora}:{min}"
 
         usuaria_telefono = self.opt_usuaria.get()
@@ -201,6 +208,10 @@ class RegistroCitas(ctk.CTkFrame):
 
         entry_style = {"fg_color": "white", "text_color": "black", "border_width": 1, "border_color": "#D3D3D3", "corner_radius": 6, "height": 35}
 
+        opt_modal_kwargs = {"fg_color": "white", "text_color": "black", "button_color": "#E6E6E6", "button_hover_color": "#D3D3D3", 
+                            "dropdown_fg_color": "white", "dropdown_text_color": "black", "dropdown_hover_color": "#F0F0F0", 
+                            "corner_radius": 6, "height": 35}
+        
         def crear_input_modal(texto, valor_inicial, editable=True):
             ctk.CTkLabel(modal, text=texto, font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40)
             ent = ctk.CTkEntry(modal, **entry_style)
@@ -214,12 +225,57 @@ class RegistroCitas(ctk.CTkFrame):
 
         ent_nombre = crear_input_modal("Nombre:", nombre, editable=False)
         ent_telefono = crear_input_modal("Teléfono:", telefono, editable=False)
-        ent_fecha = crear_input_modal("Fecha:", fecha, editable=True)
-        ent_hora = crear_input_modal("Hora (HH:MM):", hora, editable=True)
+
+        meses_nombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+        meses_dict = {"Enero": "01", "Febrero": "02", "Marzo": "03", "Abril": "04", "Mayo": "05", "Junio": "06", "Julio": "07", "Agosto": "08", "Septiembre": "09", "Octubre": "10", "Noviembre": "11", "Diciembre": "12"}
+        meses_inverso = {v: k for k, v in meses_dict.items()}
+
+        try:
+            anio_act, mes_act_num, dia_act = str(fecha).split("-")
+            mes_act_nombre = meses_inverso.get(mes_act_num, "Mes")
+        except ValueError:
+            anio_act, mes_act_nombre, dia_act = "Año", "Mes", "Día"
+
+        try:
+            partes_hora = str(hora).split(":")
+            hora_act = partes_hora[0]
+            min_act = partes_hora[1]
+        except (ValueError, IndexError):
+            hora_act, min_act = "Hora", "Min."
+
+        ctk.CTkLabel(modal, text="Fecha:", font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40, pady=(0, 0))
+        frame_fecha_modal = ctk.CTkFrame(modal, fg_color="transparent")
+        frame_fecha_modal.pack(fill="x", padx=40, pady=(0, 10))
+
+        opt_dia_modal = ctk.CTkOptionMenu(frame_fecha_modal, values=[str(i).zfill(2) for i in range(1, 32)], width=75, **opt_modal_kwargs)
+        opt_dia_modal.set(dia_act)
+        opt_dia_modal.pack(side="left", padx=(0, 5))
+
+        opt_mes_modal = ctk.CTkOptionMenu(frame_fecha_modal, values=meses_nombres, width=110, **opt_modal_kwargs)
+        opt_mes_modal.set(mes_act_nombre)
+        opt_mes_modal.pack(side="left", padx=5)
+
+        opt_ano_modal = ctk.CTkOptionMenu(frame_fecha_modal, values=["2026", "2027", "2028"], width=85, **opt_modal_kwargs)
+        opt_ano_modal.set(anio_act)
+        opt_ano_modal.pack(side="left", padx=(5, 0))
+
+        ctk.CTkLabel(modal, text="Hora (HH:MM):", font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40, pady=(0, 0))
+        frame_horario_modal = ctk.CTkFrame(modal, fg_color="transparent")
+        frame_horario_modal.pack(fill="x", padx=40, pady=(0, 10))
+
+        opt_hora_modal = ctk.CTkOptionMenu(frame_horario_modal, values=[str(i).zfill(2) for i in range(8, 17)], width=85, **opt_modal_kwargs)
+        opt_hora_modal.set(hora_act)
+        opt_hora_modal.pack(side="left", padx=(0, 5))
+
+        ctk.CTkLabel(frame_horario_modal, text=":", font=("Arial", 16, "bold"), text_color="black").pack(side="left")
+
+        opt_minuto_modal = ctk.CTkOptionMenu(frame_horario_modal, values=["00", "15", "30", "45"], width=85, **opt_modal_kwargs)
+        opt_minuto_modal.set(min_act)
+        opt_minuto_modal.pack(side="left", padx=(5, 0))
         
         estados_cita = [e.estado_cita for e in self.estados_cita_list]
         ctk.CTkLabel(modal, text="Estatus:", font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40)
-        opt_estatus = ctk.CTkOptionMenu(modal, values=estados_cita, fg_color="white", text_color="black", button_color="#E6E6E6", button_hover_color="#D3D3D3", dropdown_fg_color="white", dropdown_text_color="black", corner_radius=6, height=35)
+        opt_estatus = ctk.CTkOptionMenu(modal, values=estados_cita, **opt_modal_kwargs)
         opt_estatus.set(estatus) 
         opt_estatus.pack(fill="x", padx=40, pady=(0, 10))
 
@@ -227,6 +283,26 @@ class RegistroCitas(ctk.CTkFrame):
         lbl_mensaje.pack(pady=(5, 0))
 
         def guardar_modificacion():
+            dia_sel = opt_dia_modal.get()
+            mes_sel = opt_mes_modal.get()
+            anio_sel = opt_ano_modal.get()
+            hora_sel = opt_hora_modal.get()
+            min_sel = opt_minuto_modal.get()
+            
+            if dia_sel == "Día" or mes_sel == "Mes" or anio_sel == "Año" or hora_sel == "Hora" or min_sel == "Min.":
+                lbl_mensaje.configure(text="Faltan datos de fecha u hora.", text_color="#A80A0A")
+                return
+
+            fecha_armada = f"{anio_sel}-{meses_dict[mes_sel]}-{dia_sel}"
+            
+            try:
+                datetime.strptime(fecha_armada, "%Y-%m-%d")
+            except ValueError:
+                lbl_mensaje.configure(text=f"Error: El {dia_sel} de {mes_sel} no existe.", text_color="#A80A0A")
+                return
+            
+            hora_armada = f"{hora_sel}:{min_sel}"
+            
             cita_actual = service_obtener_cita_por_id(id_cita=id_cita)
             nuevo_estado_cita = self._texto_a_id(self.estados_cita_list, "estado_cita", opt_estatus.get(), "id_estado_cita")
             tipo_mensaje = "cita_actualizada"
@@ -275,12 +351,12 @@ class RegistroCitas(ctk.CTkFrame):
                     lbl_mensaje.configure(text="Ha ocurrido un error: " + res_actualizar_cita["error"], text_color="#A80A0A")
                     self.after(1500, modal.destroy)
 
-            if ent_fecha.get() != cita_actual.fecha or ent_hora.get() != cita_actual.hora:
+            elif fecha_armada != cita_actual.fecha or hora_armada != cita_actual.hora:
                 cita_modificada = Cita(
-                    ent_fecha.get(),
+                    fecha_armada,
                     cita_actual.usuaria_id,
                     cita_actual.psicologa_id,
-                    ent_hora.get(),
+                    hora_armada,
                     nuevo_estado_cita,
                     cita_actual.id_cita
                 )
