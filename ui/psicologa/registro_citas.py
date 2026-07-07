@@ -322,7 +322,7 @@ class RegistroCitas(ctk.CTkFrame):
         
                 if not confirmacion:
                     return
-                
+                btn_guardar.configure(state="disabled")
                 if nuevo_estado_cita == 2: # Atendida
                     tipo_mensaje = "cita_atendida"
                 elif nuevo_estado_cita == 3: # Cancelada
@@ -352,6 +352,7 @@ class RegistroCitas(ctk.CTkFrame):
                     self.after(1500, modal.destroy)
 
             elif fecha_armada != cita_actual.fecha or hora_armada != cita_actual.hora:
+                btn_guardar.configure(state="disabled")
                 cita_modificada = Cita(
                     fecha_armada,
                     cita_actual.usuaria_id,
