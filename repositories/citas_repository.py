@@ -25,7 +25,7 @@ def obtener_citas() -> list[Cita]:
     enable_foreign_keys(conn)
 
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM citas")
+    cursor.execute("SELECT * FROM citas ORDER BY fecha ASC, hora ASC")
 
     resultados = cursor.fetchall()
     conn.close()

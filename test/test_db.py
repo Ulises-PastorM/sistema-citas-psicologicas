@@ -3,24 +3,21 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from services.usuarias_services import service_crear_usuaria, service_obtener_usuarias
-from services.psicologas_services import service_crear_psicologa, service_obtener_psicologas
+from services.usuarias_services import service_crear_usuaria
+from services.psicologas_services import service_crear_psicologa
 from services.citas_services import service_crear_cita
-from services.sesiones_services import service_crear_sesion
 from services.usuarios_sistema_services import service_crear_usuario
-from services.sesiones_services import service_crear_sesion
 from models.usuaria_model import Usuaria
 from models.psicologa_model import Psicologa
 from models.cita_model import Cita
-from models.sesion_model import Sesion
 
-# Agrega 2 usuarias
-nombres = ["Fernanda López", "Daniela Pérez"]
-for i in range(2):
+# Agrega 4 usuarias
+nombres = ["María Hernández", "Lucía Ramírez", "Julia Martínez", "Gabriela Márquez", "Daniela Ortíz", "Fernanda Cruz", "Brenda Gutierrez"]
+for i in range(7):
     nueva_usuaria = Usuaria(
         nombre=nombres[i],
-        edad=25,
-        telefono="953110826" + str(i),
+        edad=25+i,
+        telefono="953276944" + str(i-1),
         fecha_nacimiento="1993-04-15",
         lugar_nacimiento="Oaxaca de Juárez, Oaxaca",
         escolaridad_id=5,
@@ -54,9 +51,16 @@ for i in range(1):
 
 # Agrega 5 citas
 citas = [
-    ('2026-07-22', '09:00', 1, 1, 1),
-    ('2026-07-22', '10:30', 1, 2, 1),
-    ('2026-07-22', '12:00', 2, 2, 1),
+    ('2026-07-07', '13:00', 1, 2, 1),
+    ('2026-07-07', '10:00', 1, 3, 1),
+
+    ('2026-07-14', '11:00', 1, 4, 1),
+    ('2026-07-15', '09:00', 1, 5, 1),
+    ('2026-07-17', '12:00', 1, 3, 1),
+
+    ('2026-07-10', '09:00', 1, 6, 1),
+
+    ('2026-07-09', '10:00', 1, 7, 1),
 ]
 
 for i in citas:
@@ -70,25 +74,9 @@ for i in citas:
     resultado = service_crear_cita(nueva_cita)
     print(resultado)
 
-# Agrega 2 sesiones
-for i in range(2):
-    nueva_sesion = Sesion(
-        cita_id=i+1,
-        fecha_sesion="2026-09-02",
-        observaciones="Sufre violencia por parte de su esposo. La paciente cuenta con problemas de autoestima.",
-    )
-    resultado = service_crear_sesion(nueva_sesion)
-    print(resultado)
 
 # Ingresa un usuario admin
 resultado = service_crear_usuario("admin", "123456", 1)
-print(resultado)
-
-if resultado["success"]:
-    print("Nuevo usuario agregado!")
-
-# Ingresa una psicologa
-resultado = service_crear_usuario("Nayeli", "654321", 2)
 print(resultado)
 
 if resultado["success"]:
