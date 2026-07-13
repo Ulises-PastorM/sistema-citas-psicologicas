@@ -9,6 +9,7 @@ from repositories.usuarias_repository import (
     crear_usuaria_direccion,
     obtener_usuaria_por_telefono,
     obtener_usuaria_direccion,
+    obtener_usuaria_agresor
 )
 
 
@@ -180,4 +181,14 @@ def service_obtener_usuaria_direccion(usuaria_id) -> dict | None:
         return obtener_usuaria_direccion(usuaria_id)
     except Exception as e:
         print(f"[usuarias_services_direccion] Error al obtener usuaria_direccion: {e}")
+        return None
+
+def service_obtener_usuaria_agresor(usuaria_id) -> dict | None:
+    if not usuaria_id:
+        return None
+    
+    try:
+        return obtener_usuaria_agresor(usuaria_id)
+    except Exception as e:
+        print(f"[usuarias_services_agresor] Error al obtener usuaria_agresor: {e}")
         return None

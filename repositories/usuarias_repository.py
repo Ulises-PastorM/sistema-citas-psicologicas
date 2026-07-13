@@ -216,3 +216,18 @@ def obtener_usuaria_direccion(usuaria_id) -> dict | None:
     conn.close()
 
     return {"usuaria_id": dict(resultado).get("usuaria_id"), "direccion_id": dict(resultado).get("direccion_id")} if resultado else None
+
+def obtener_usuaria_agresor(usuaria_id) -> dict | None:
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM usuarias_agresores WHERE usuaria_id = ?",
+        (usuaria_id,)
+    )
+
+    resultado = cursor.fetchone()
+    conn.close()
+
+    return {"usuaria_id": dict(resultado).get("usuaria_id"), "agresor_id": dict(resultado).get("agresor_id")} if resultado else None

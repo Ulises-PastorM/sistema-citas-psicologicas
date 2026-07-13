@@ -45,22 +45,22 @@ def enviar_mensaje_a_usuaria(usuaria: Usuaria, cita: Cita, tipo_mensaje: str) ->
         return {"success": False, "error": f"La usuaria '{usuaria.nombre}' no tiene teléfono registrado."}
 
     if tipo_mensaje == "cita_agendada":
-        mensaje = "¡Hola, " + usuaria.nombre + "!\nTu cita en IMMujer ha sido agendada.\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n¡Te esperamos!"
+        mensaje = "¡Hola, " + usuaria.nombre + "!\nTu cita en IMMujer ha sido agendada.\n\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n\n¡Te esperamos!"
     
     elif tipo_mensaje == "cita_actualizada":
-        mensaje = "¡Hola, " + usuaria.nombre + "!\nTu cita en IMMujer ha sido actualizada.\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n¡Te esperamos!"
+        mensaje = "¡Hola, " + usuaria.nombre + "!\nTu cita en IMMujer ha sido actualizada.\n\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n\n¡Te esperamos!"
     
     elif tipo_mensaje == "cita_atendida":
-        mensaje = "¡Hola, " + usuaria.nombre + "!\nTu cita en IMMujer ha sido atendida.\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n¡Te esperamos!"
+        mensaje = "¡Hola, " + usuaria.nombre + "!\nTu cita en IMMujer ha sido atendida.\n\n¡Gracias por confiar en IMMujer!"
     
     elif tipo_mensaje == "cita_cancelada":
-        mensaje = "¡Hola, " + usuaria.nombre + "!\nLamentamos informarte que tu cita en IMMujer ha sido cancelada.\n¡No te preocupes! Nos pondremos en contacto contigo para agendar una nueva cita.\n¡Te esperamos!"
+        mensaje = "¡Hola, " + usuaria.nombre + "!\nLamentamos informarte que tu cita en IMMujer ha sido cancelada.\n\n¡No te preocupes! En IMMujer siempre serás bienvenida."
     
     elif tipo_mensaje == "no_asistio":
-        mensaje = "¡Hola, " + usuaria.nombre + "!\nLamentamos que no hayas podido asistir a tu cita de hoy.\n¡No te preocupes! Nos pondremos en contacto contigo para agendar una nueva cita.\n¡Te esperamos!"
+        mensaje = "¡Hola, " + usuaria.nombre + "!\nLamentamos que no hayas podido asistir a tu cita de hoy.\n\n¡No te preocupes! Nos pondremos en contacto contigo para agendar una nueva cita.\n¡Te esperamos!"
     
     elif tipo_mensaje == "recordatorio_cita":
-        mensaje =  "¡Hola, " + usuaria.nombre + "!\nTe recordamos que tienes una cita en IMMujer.\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n¡Te esperamos!"
+        mensaje =  "¡Hola, " + usuaria.nombre + "!\nTe recordamos que tienes una cita en IMMujer.\n\nFecha: " + fecha_a_texto(cita.fecha) + "\nHora: " + cita.hora + " hrs.\n\n¡Te esperamos!"
     
     else:
         return {"success": False, "error": "Tipo de mensaje no válido."}

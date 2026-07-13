@@ -158,6 +158,23 @@ CREATE TABLE IF NOT EXISTS dependencias (
     dependencia TEXT NOT NULL UNIQUE
 );
 
+CREATE TABLE IF NOT EXISTS agresores (
+    "id_agresor"          INTEGER,
+    "nombre_agresor"      TEXT    NOT NULL,
+    "parentesco_agresor"  TEXT,
+    "ocupacion_agresor"   TEXT,
+    "edad_agresor"        INTEGER,
+    PRIMARY KEY("id_agresor" AUTOINCREMENT)
+);
+
+CREATE TABLE IF NOT EXISTS usuarias_agresores (
+    "usuaria_id"  INTEGER NOT NULL,
+    "agresor_id"  INTEGER NOT NULL,
+    FOREIGN KEY ("usuaria_id") 
+		REFERENCES usuarias("id_usuaria"),
+    FOREIGN KEY ("agresor_id") 
+		REFERENCES agresores("id_agresor")
+);
 
 -- CATÁLOGOS
 

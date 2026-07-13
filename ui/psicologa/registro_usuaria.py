@@ -3,12 +3,14 @@ from tkinter import messagebox
 from datetime import datetime
 from models.usuaria_model import Usuaria
 from models.direccion_model import Direccion
+from models.agresor_model import Agresor
 from services.usuarias_services import (
     service_crear_usuaria,
     service_crear_usuaria_direccion,
     service_obtener_usuarias,
     service_obtener_usuaria_por_telefono,
     service_obtener_usuaria_direccion,
+    service_obtener_usuaria_agresor,
     service_actualizar_usuaria)
 from services.direcciones_services import (
     service_crear_direccion,
@@ -24,6 +26,11 @@ from repositories.catalogos_repository import (
     obtener_sexos,
     obtener_estatus
 )
+from services.agresores_services import (
+    service_actualizar_agresor,
+    service_crear_y_vincular_agresor,
+    service_obtener_agresor_por_id
+)
 
 class RegistroUsuariaView(ctk.CTkFrame):
     def __init__(self, master):
@@ -32,10 +39,12 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=1)
 
         self.datos_domicilio = None
+        self.datos_agresor = None
         self.padecimientos_seleccionados = [] 
         self.editando_usuaria = False
         self.id_usuaria_editada = 0
         self.id_direccion_editada = 0
+        self.id_agresor_editado = 0
         self.btn_submit = None
         self.domicilio_estatus_list = None
         self.escolaridades_list = None
@@ -170,9 +179,9 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.btn_volver_inicio.grid_remove()
         self.mostrar_pagina(self.page_inicio)
 
-    def crear_campo_entrada(self, parent, texto_label, ancho=None, validacion=None):
+    def crear_campo_entrada(self, parent, texto_label, ancho=None, validacion=None, color="#555555"):
         frame = ctk.CTkFrame(parent, fg_color="transparent")
-        ctk.CTkLabel(frame, text=texto_label, text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(frame, text=texto_label, text_color=color, font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
         
         estilo = self.entry_style.copy()
         if ancho:
@@ -230,7 +239,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         ctk.CTkLabel(self.page1, text="Registrar Usuaria", font=("Arial", 14, "bold", "italic"), text_color="#006B4D").grid(row=0, column=0, sticky="w", pady=(0, 10))
 
-        f_nom, self.ent_nombre = self.crear_campo_entrada(self.page1, "Nombre completo:")
+        f_nom, self.ent_nombre = self.crear_campo_entrada(self.page1, "Nombre completo (*):", color="#D60D0D")
         f_nom.grid(row=1, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
         
         escolaridades = [e.escolaridad for e in self.escolaridades_list]
@@ -239,7 +248,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         
         f_fec = ctk.CTkFrame(self.page1, fg_color="transparent")
         f_fec.grid(row=2, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
-        ctk.CTkLabel(f_fec, text="Fecha de nacimiento:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(f_fec, text="Fecha de nacimiento (*):", text_color="#D60D0D", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
         
         f_fec_inputs = ctk.CTkFrame(f_fec, fg_color="transparent")
         f_fec_inputs.pack(fill="x", expand=True)
@@ -278,7 +287,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         f_pad, self.btn_padecimiento = self.crear_campo_boton(self.page1, "Padecimiento(s):", "📍 Seleccionar padecimientos...", self.abrir_modal_padecimientos)
         f_pad.grid(row=4, column=1, sticky="ew", padx=(10, 0), pady=(0, 12))
         
-        f_tel, self.ent_telefono = self.crear_campo_entrada(self.page1, "Número de teléfono:", validacion=self.vcmd_numeros)
+        f_tel, self.ent_telefono = self.crear_campo_entrada(self.page1, "Número de teléfono (*):", validacion=self.vcmd_numeros, color="#D60D0D")
         f_tel.grid(row=5, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
         
         f_dom, self.btn_domicilio = self.crear_campo_boton(self.page1, "Domicilio:", "📍 Ingresar Domicilio...", self.abrir_modal_domicilio)
@@ -484,6 +493,12 @@ class RegistroUsuariaView(ctk.CTkFrame):
         
         f_eda, self.ent_edad_agresor = self.crear_campo_entrada(self.page3, "Edad:", ancho=100, validacion=self.vcmd_numeros)
         f_eda.grid(row=3, column=0, sticky="w", pady=(0, 12))
+
+        if self.datos_agresor:
+            self.ent_agresor.insert(0, self.datos_agresor.nombre_agresor)
+            self.ent_parentesco.insert(0, self.datos_agresor.parentesco_agresor)
+            self.ent_ocupacion_agresor.insert(0, self.datos_agresor.ocupacion_agresor)
+            self.ent_edad_agresor.insert(0, self.datos_agresor.edad_agresor)
         
         btn_prev = ctk.CTkButton(self.page3, text="🡨", command=lambda: self.mostrar_pagina(self.page2), **self.btn_nav_style)
         btn_prev.grid(row=4, column=0, sticky="w", pady=(20, 0))
@@ -583,6 +598,15 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 id_usuaria = self.id_usuaria_editada if self.editando_usuaria else None 
             )
 
+            if self.ent_agresor.get() != "" or self.ent_parentesco.get() != "" or self.ent_ocupacion_agresor.get() != "" or self.ent_edad_agresor.get() != "":
+                self.datos_agresor = Agresor(
+                    nombre_agresor = self.ent_agresor.get(),
+                    parentesco_agresor = self.ent_parentesco.get(),
+                    ocupacion_agresor = self.ent_ocupacion_agresor.get(),
+                    edad_agresor = self.ent_edad_agresor.get(),
+                    id_agresor = self.id_agresor_editado if self.editando_usuaria else None
+                )
+            
             if not self.editando_usuaria:
                 confirmacion = messagebox.askyesno("Confirmar Registro", f"¿Está segura de que desea registrar a {self.ent_nombre.get()}?")
                 if not confirmacion:
@@ -639,12 +663,41 @@ class RegistroUsuariaView(ctk.CTkFrame):
                     else:
                         messagebox.showwarning("Aviso", f"Usuaria actualizada, pero falló el domicilio: {res_direccion.get('error')}")
                         return
+            
+            #Hay información de agresor
+            if self.datos_agresor:
+                #No se está editando una usuaria
+                if not self.editando_usuaria:
+                    res_agresor = service_crear_y_vincular_agresor(id_usuaria_creada, self.datos_agresor)
+                    if res_agresor.get("success"):
+                        pass
+                    else:
+                        messagebox.showwarning("Aviso", f"Usuaria creada, pero falló al agregar agresor: {res_agresor.get('error')}")
+                        return
+                # Se esta editando una usuaria, pero no tiene agresor registrado
+                elif self.id_agresor_editado == 0:
+                    # Se registra un nuevo agresor
+                    res_agresor_vincular = service_crear_y_vincular_agresor(self.id_usuaria_editada, self.datos_agresor)
+                    if res_agresor_vincular.get("success"):
+                        pass
+                    else:
+                        messagebox.showwarning("Aviso", f"Usuaria actualizada, pero falló al agregar agresor: {res_agresor.get('error')}")
+                        return
+                # Se esta editando una usuaria y tiene una agresor registrada
+                else:
+                    res_actualizar_agresor = service_actualizar_agresor(self.datos_agresor)
+                    if res_actualizar_agresor.get("success"):
+                        pass
+                    else:
+                        messagebox.showwarning("Aviso", f"Usuaria actualizada, pero falló el agresor: {res_agresor.get('error')}")
+                        return
             if not self.editando_usuaria:
                 messagebox.showinfo("Éxito", "¡Usuaria registrada correctamente!")
             else:
                 messagebox.showinfo("Éxito", "¡Información de usuaria actualizada correctamente!")
                 self.editando_usuaria = False
                 self.refrescar_boton_registrar_editar()
+
             self.limpiar_formulario()    
             self.volver_al_inicio()
 
@@ -704,6 +757,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.ent_edad_agresor.delete(0, "end")
         self.id_usuaria_editada = 0
         self.id_direccion_editada = 0
+        self.id_agresor_editado = 0
 
     def limpiar_entries_hijos(self, parent):
         for widget in parent.winfo_children():
@@ -753,11 +807,19 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 datos_usuaria = service_obtener_usuaria_por_telefono(telefono_usuaria)
                 self.id_usuaria_editada = datos_usuaria.id_usuaria
                 usuaria_direccion = service_obtener_usuaria_direccion(datos_usuaria.id_usuaria)
+                usuaria_agresor = service_obtener_usuaria_agresor(datos_usuaria.id_usuaria)
                 datos_direccion = None
+                datos_agresor = None
+
                 if usuaria_direccion != None:
                     datos_direccion = service_obtener_direccion_por_id(usuaria_direccion["direccion_id"])
                     self.id_direccion_editada = datos_direccion.id_direccion
-                llenar_campos_usuaria(datos_usuaria, datos_direccion)
+                
+                if usuaria_agresor != None:
+                    datos_agresor = service_obtener_agresor_por_id(usuaria_agresor["agresor_id"])
+                    self.id_agresor_editado = datos_agresor.id_agresor
+                
+                llenar_campos_usuaria(datos_usuaria, datos_direccion, datos_agresor)
                 messagebox.showinfo("Éxito", f"Datos de {nombre_usuaria} cargados.")
                 self.editando_usuaria = True
                 self.refrescar_boton_registrar_editar()
@@ -775,15 +837,29 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 widget.delete("1.0", "end")
                 widget.insert("1.0", valor)
 
-        def llenar_campos_usuaria(usuaria: Usuaria, direccion: Direccion):
+        def llenar_campos_usuaria(usuaria: Usuaria, direccion: Direccion, agresor: Agresor):
             if direccion != None:
                 self.datos_domicilio = direccion
                 self.btn_domicilio.configure(text=" ✅ Domicilio guardado", text_color="black", border_color="#32CD32", border_width=2)
             
+            if agresor != None:
+                self.datos_agresor = agresor
+                # Para agresor
+                set_widget_text(self.ent_agresor, agresor.nombre_agresor)
+                set_widget_text(self.ent_parentesco, agresor.parentesco_agresor)
+                set_widget_text(self.ent_ocupacion_agresor, agresor.ocupacion_agresor)
+                set_widget_text(self.ent_edad_agresor, agresor.edad_agresor)
+            
+            #if hasattr(self, 'menus_familia'):
+            #    for menu in self.menus_familia:
+            #        menu.set("1")
+            #self.limpiar_entries_hijos(self.page2)
+            familia_usuaria = ["1", "0", "2", "0", "1", "3"]
             if hasattr(self, 'menus_familia'):
+                i = 0
                 for menu in self.menus_familia:
-                    menu.set("0")
-            self.limpiar_entries_hijos(self.page2)
+                    menu.set(familia_usuaria[i])
+                    i += 1
 
             self.var_immujer.set("Sí")
             self.var_terapia.set("Sí")
@@ -793,16 +869,15 @@ class RegistroUsuariaView(ctk.CTkFrame):
             set_widget_text(self.ent_ocupacion, usuaria.ocupacion)
             set_widget_text(self.ent_telefono, usuaria.telefono)
             set_widget_text(self.ent_cuando, usuaria.servicio_immujer_fecha)
-            set_widget_text(self.ent_tipo_apoyo, usuaria.servicio_immujer_id)
+            set_widget_text(self.ent_tipo_apoyo, "Psicológico")
+            self.padecimientos_seleccionados = usuaria.padecimiento.split(", ")
+            num_seleccionados = len(self.padecimientos_seleccionados)
+            if num_seleccionados > 0:
+                self.btn_padecimiento.configure(text=f" ✅ {num_seleccionados} seleccionados", text_color="black", border_color="#32CD32", border_width=2)
             set_widget_text(self.ent_tiempo, usuaria.terapia_tiempo)
             set_widget_text(self.ent_lugar_terapia, usuaria.terapia_lugar)
             set_widget_text(self.ent_red_apoyo, usuaria.red_apoyo)
             set_widget_text(self.txt_motivo, usuaria.motivo_consulta)
-            # Para agresor
-            set_widget_text(self.ent_agresor, "Alberto Ramírez")
-            set_widget_text(self.ent_parentesco, "Esposo")
-            set_widget_text(self.ent_ocupacion_agresor, "Albañil")
-            set_widget_text(self.ent_edad_agresor, 41)
 
 
             self.opt_escolaridad.set(self._id_a_texto(self.escolaridades_list, "id_escolaridad", usuaria.escolaridad_id, "escolaridad"))

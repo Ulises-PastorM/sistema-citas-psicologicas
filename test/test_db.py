@@ -17,7 +17,7 @@ for i in range(7):
     nueva_usuaria = Usuaria(
         nombre=nombres[i],
         edad=25+i,
-        telefono="953276944" + str(i-1),
+        telefono="953276944" + str(i),
         fecha_nacimiento="1993-04-15",
         lugar_nacimiento="Oaxaca de Juárez, Oaxaca",
         escolaridad_id=5,
@@ -25,12 +25,12 @@ for i in range(7):
         estado_civil_id=2,
         sexo_id=1,
         lengua_indigena_id=1,
-        padecimiento="Ninguno",
+        padecimiento="Violencia física",
         servicio_immujer_id=1,
         servicio_immujer_fecha="2024-06-20",
         terapia_tiempo="6 meses",
         terapia_lugar="Centro de Atención IMMUJER",
-        canalizada_por="DIF Municipal",
+        canalizada_por="Vicefiscalía",
         red_apoyo="Madre y hermana",
         motivo_consulta="Violencia psicológica y orientación legal",
         estatus_id=1

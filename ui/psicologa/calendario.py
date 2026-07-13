@@ -14,7 +14,7 @@ class CalendarioView(ctk.CTkFrame):
         self.anio_actual = hoy.year
         self.mes_actual = hoy.month
         self.fecha_seleccionada = hoy 
-        self.filtro_actual = "Mes" 
+        self.filtro_actual = "Día" 
 
         self.meses_nombres = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 
@@ -73,7 +73,7 @@ class CalendarioView(ctk.CTkFrame):
         self.scroll_citas.pack(fill="both", expand=True, padx=10, pady=(0, 15))
 
         self.renderizar_calendario()
-        self.cambiar_filtro("Mes") 
+        self.cambiar_filtro("Día") 
 
     def mes_anterior(self):
         if self.mes_actual == 1:
