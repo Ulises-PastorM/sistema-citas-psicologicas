@@ -24,7 +24,7 @@ class MiCuentaView(ctk.CTkFrame):
         titulos_frame.pack(side="left")
         ctk.CTkLabel(
             titulos_frame, text="Mi Cuenta",
-            font=("Arial", 22, "bold"), text_color="#006B4D"
+            font=("Arial", 23, "bold"), text_color="#006B4D"
         ).pack(anchor="w")
 
         # ─── Contenedor principal ─────────────────────────────────────────────
@@ -43,7 +43,7 @@ class MiCuentaView(ctk.CTkFrame):
 
         ctk.CTkLabel(
             card_info, text="Información Personal",
-            font=("Arial", 16, "bold"), text_color="#006B4D"
+            font=("Arial", 17, "bold"), text_color="#006B4D"
         ).pack(anchor="w", padx=20, pady=(20, 15))
 
         datos = [
@@ -56,8 +56,8 @@ class MiCuentaView(ctk.CTkFrame):
         for titulo, valor in datos:
             row_frame = ctk.CTkFrame(card_info, fg_color="transparent")
             row_frame.pack(fill="x", padx=20, pady=5)
-            ctk.CTkLabel(row_frame, text=titulo, font=("Arial", 11, "bold"), text_color="gray").pack(anchor="w")
-            ctk.CTkLabel(row_frame, text=valor,  font=("Arial", 13),         text_color="black").pack(anchor="w")
+            ctk.CTkLabel(row_frame, text=titulo, font=("Arial", 12, "bold"), text_color="gray").pack(anchor="w")
+            ctk.CTkLabel(row_frame, text=valor,  font=("Arial", 14),         text_color="black").pack(anchor="w")
             ctk.CTkFrame(card_info, height=1, fg_color="#F0F0F0").pack(fill="x", padx=20, pady=5)
 
         # ─── Card: QR WhatsApp ────────────────────────────────────────────────
@@ -69,13 +69,13 @@ class MiCuentaView(ctk.CTkFrame):
 
         ctk.CTkLabel(
             card_qr, text="Conexión WhatsApp",
-            font=("Arial", 16, "bold"), text_color="#006B4D"
+            font=("Arial", 17, "bold"), text_color="#006B4D"
         ).pack(anchor="w", padx=20, pady=(20, 5))
 
         # Label de estado (🟢 / 🔴 / 🟡)
         self.lbl_estado_wa = ctk.CTkLabel(
             card_qr, text="🔄 Verificando...",
-            font=("Arial", 12), text_color="#888888"
+            font=("Arial", 13), text_color="#888888"
         )
         self.lbl_estado_wa.pack(anchor="w", padx=20, pady=(0, 10))
 
@@ -96,7 +96,7 @@ class MiCuentaView(ctk.CTkFrame):
         self.btn_refrescar = ctk.CTkButton(
             card_qr, text="🔄 Refrescar QR",
             fg_color="#FF6B35", hover_color="#cc5520",
-            text_color="white", font=("Arial", 13, "bold"),
+            text_color="white", font=("Arial", 15, "bold"),
             corner_radius=8, height=38,
             command=self._refrescar_manual
         )
@@ -184,7 +184,7 @@ class MiCuentaView(ctk.CTkFrame):
         self.lbl_qr.configure(
             image=None,          # elimina la imagen del QR
             text="✅\nSesión activa",
-            font=("Arial", 16, "bold"),
+            font=("Arial", 17, "bold"),
             text_color="#006B4D"
         )
         self.lbl_qr.image = None   # liberar referencia

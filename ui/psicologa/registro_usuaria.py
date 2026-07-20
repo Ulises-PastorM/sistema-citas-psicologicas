@@ -33,8 +33,11 @@ from services.agresores_services import (
 )
 
 class RegistroUsuariaView(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, on_actualizar=None):
         super().__init__(master, fg_color="transparent")
+        
+        self.on_actualizar = on_actualizar
+        
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
@@ -61,10 +64,10 @@ class RegistroUsuariaView(ctk.CTkFrame):
             "Violencia digital", "Pensión alimenticia", "Guardia y custodia", "Otro"
         ]
 
-        self.lbl_titulo = ctk.CTkLabel(self, text="Registro de Usuaria para Atención Psicológica", font=("Arial", 20, "bold", "italic"), text_color="#006B4D")
+        self.lbl_titulo = ctk.CTkLabel(self, text="Registro de Usuaria para Atención Psicológica", font=("Arial", 21, "bold", "italic"), text_color="#006B4D")
         self.lbl_titulo.grid(row=0, column=0, pady=(0, 10), sticky="w")
         
-        self.btn_volver_inicio = ctk.CTkButton(self, text=" 🡨 Volver a opciones", command=self.volver_al_inicio, fg_color="#FF6B35", font=("Arial", 14, "bold"), text_color="white")
+        self.btn_volver_inicio = ctk.CTkButton(self, text=" 🡨 Volver a opciones", command=self.volver_al_inicio, fg_color="#FF6B35", font=("Arial", 15, "bold"), text_color="white")
         self.btn_volver_inicio.grid(row=0, column=0, pady=(0, 10), sticky="e")
         self.btn_volver_inicio.grid_remove() # Lo ocultamos inicialmente
 
@@ -97,7 +100,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.btn_nav_style = {
             "fg_color": "#FF6B35", 
             "text_color": "white", 
-            "font": ("Arial", 18, "bold"), 
+            "font": ("Arial", 19, "bold"), 
             "width": 40, 
             "height": 35, 
             "corner_radius": 8
@@ -141,7 +144,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         btn_registrar = ctk.CTkButton(
             contenedor_botones,
             text="Registrar Nueva Usuaria", 
-            font=("Arial", 18, "bold"),
+            font=("Arial", 19, "bold"),
             fg_color="#006B4D",
             hover_color="#004E38", 
             text_color="white",
@@ -156,7 +159,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         btn_actualizar = ctk.CTkButton(
             contenedor_botones,
             text="Actualizar Datos de Usuaria", 
-            font=("Arial", 18, "bold"),
+            font=("Arial", 19, "bold"),
             fg_color="#FF6B35",
             hover_color="#CC552A", 
             text_color="white",
@@ -181,7 +184,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
     def crear_campo_entrada(self, parent, texto_label, ancho=None, validacion=None, color="#555555"):
         frame = ctk.CTkFrame(parent, fg_color="transparent")
-        ctk.CTkLabel(frame, text=texto_label, text_color=color, font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(frame, text=texto_label, text_color=color, font=("Arial", 13, "bold")).pack(anchor="w", pady=(0, 2))
         
         estilo = self.entry_style.copy()
         if ancho:
@@ -201,7 +204,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
     def crear_campo_opciones(self, parent, texto_label, opciones):
         frame = ctk.CTkFrame(parent, fg_color="transparent")
-        ctk.CTkLabel(frame, text=texto_label, text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(frame, text=texto_label, text_color="#555555", font=("Arial", 13, "bold")).pack(anchor="w", pady=(0, 2))
         
         menu = ctk.CTkOptionMenu(frame, values=opciones, **self.option_style)
         menu.pack(fill="x", expand=True)
@@ -209,7 +212,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
     def crear_campo_boton(self, parent, texto_label, texto_boton, comando):
         frame = ctk.CTkFrame(parent, fg_color="transparent")
-        ctk.CTkLabel(frame, text=texto_label, text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(frame, text=texto_label, text_color="#555555", font=("Arial", 13, "bold")).pack(anchor="w", pady=(0, 2))
         
         btn = ctk.CTkButton(frame, text=texto_boton, command=comando,
                             fg_color="white", text_color="gray", hover_color="#F0F0F0",
@@ -237,7 +240,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.page1.grid(row=0, column=0, sticky="nsew", padx=30, pady=15)
         self.page1.grid_columnconfigure((0, 1), weight=1)
 
-        ctk.CTkLabel(self.page1, text="Registrar Usuaria", font=("Arial", 14, "bold", "italic"), text_color="#006B4D").grid(row=0, column=0, sticky="w", pady=(0, 10))
+        ctk.CTkLabel(self.page1, text="Registrar Usuaria", font=("Arial", 15, "bold", "italic"), text_color="#006B4D").grid(row=0, column=0, sticky="w", pady=(0, 10))
 
         f_nom, self.ent_nombre = self.crear_campo_entrada(self.page1, "Nombre completo (*):", color="#D60D0D")
         f_nom.grid(row=1, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
@@ -248,7 +251,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         
         f_fec = ctk.CTkFrame(self.page1, fg_color="transparent")
         f_fec.grid(row=2, column=0, sticky="ew", padx=(0, 10), pady=(0, 12))
-        ctk.CTkLabel(f_fec, text="Fecha de nacimiento (*):", text_color="#D60D0D", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(f_fec, text="Fecha de nacimiento (*):", text_color="#D60D0D", font=("Arial", 13, "bold")).pack(anchor="w", pady=(0, 2))
         
         f_fec_inputs = ctk.CTkFrame(f_fec, fg_color="transparent")
         f_fec_inputs.pack(fill="x", expand=True)
@@ -308,7 +311,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
-        ctk.CTkLabel(modal, text="⚕️ Seleccione los padecimientos", font=("Arial", 16, "bold"), text_color="#006B4D").pack(pady=(20, 10))
+        ctk.CTkLabel(modal, text="⚕️ Seleccione los padecimientos", font=("Arial", 17, "bold"), text_color="#006B4D").pack(pady=(20, 10))
 
         scroll_pad = ctk.CTkFrame(modal, fg_color="transparent")
         scroll_pad.pack(fill="both", expand=True, padx=30, pady=(0, 10))
@@ -335,7 +338,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 
             modal.destroy()
 
-        ctk.CTkButton(modal, text="Guardar Selección", command=guardar_padecimientos, fg_color="#FF6B35", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=35).pack(pady=(0, 20))
+        ctk.CTkButton(modal, text="Guardar Selección", command=guardar_padecimientos, fg_color="#FF6B35", text_color="white", font=("Arial", 15, "bold"), corner_radius=8, height=35).pack(pady=(0, 20))
         
     def abrir_modal_domicilio(self):
         modal = ctk.CTkToplevel(self)
@@ -346,22 +349,22 @@ class RegistroUsuariaView(ctk.CTkFrame):
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
-        ctk.CTkLabel(modal, text="🏠 Dirección y Estatus", font=("Arial", 16, "bold"), text_color="#006B4D").pack(pady=(20, 15))
+        ctk.CTkLabel(modal, text="🏠 Dirección y Estatus", font=("Arial", 17, "bold"), text_color="#006B4D").pack(pady=(20, 15))
 
-        ctk.CTkLabel(modal, text="Calle y Número:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", padx=30)
+        ctk.CTkLabel(modal, text="Calle y Número:", text_color="#555555", font=("Arial", 13, "bold")).pack(anchor="w", padx=30)
         ent_calle = ctk.CTkEntry(modal, **self.entry_style)
         ent_calle.pack(fill="x", padx=30, pady=(0, 15))
 
-        ctk.CTkLabel(modal, text="Colonia ó Agencia:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", padx=30)
+        ctk.CTkLabel(modal, text="Colonia ó Agencia:", text_color="#555555", font=("Arial", 13, "bold")).pack(anchor="w", padx=30)
         ent_colonia = ctk.CTkEntry(modal, **self.entry_style)
         ent_colonia.pack(fill="x", padx=30, pady=(0, 15))
 
-        ctk.CTkLabel(modal, text="Municipio:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", padx=30)
+        ctk.CTkLabel(modal, text="Municipio:", text_color="#555555", font=("Arial", 13, "bold")).pack(anchor="w", padx=30)
         ent_municipio = ctk.CTkEntry(modal, **self.entry_style)
         ent_municipio.pack(fill="x", padx=30, pady=(0, 15))
 
         domicilio_estatus = [d.domicilio_estatus for d in self.domicilio_estatus_list]
-        ctk.CTkLabel(modal, text="Estatus de su domicilio:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", padx=30)
+        ctk.CTkLabel(modal, text="Estatus de su domicilio:", text_color="#555555", font=("Arial", 13, "bold")).pack(anchor="w", padx=30)
         opt_estatus = ctk.CTkOptionMenu(modal, values=domicilio_estatus, **self.option_style)
         opt_estatus.pack(fill="x", padx=30, pady=(0, 25))
 
@@ -395,7 +398,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
             self.btn_domicilio.configure(text=" ✅ Domicilio guardado", text_color="black", border_color="#32CD32", border_width=2)
             modal.destroy()
 
-        btn_guardar = ctk.CTkButton(modal, text="Guardar Datos", command=guardar_datos, fg_color="#FF6B35", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=35)
+        btn_guardar = ctk.CTkButton(modal, text="Guardar Datos", command=guardar_datos, fg_color="#FF6B35", text_color="white", font=("Arial", 15, "bold"), corner_radius=8, height=35)
         btn_guardar.pack(pady=(0, 20))
 
     def crear_pagina_2(self):
@@ -403,7 +406,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.page2.grid(row=0, column=0, sticky="nsew", padx=30, pady=15)
         self.page2.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
-        ctk.CTkLabel(self.page2, text="Integrantes de la familia", font=("Arial", 14, "bold", "italic"), text_color="#006B4D").grid(row=0, column=0, columnspan=4, sticky="w", pady=(0, 10))
+        ctk.CTkLabel(self.page2, text="Integrantes de la familia", font=("Arial", 15, "bold", "italic"), text_color="#006B4D").grid(row=0, column=0, columnspan=4, sticky="w", pady=(0, 10))
 
         tabla_frame = ctk.CTkFrame(self.page2, fg_color="transparent")
         tabla_frame.grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 10))
@@ -411,7 +414,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         headers = ["", "Edad de:\n0-14", "Edad de:\n14-18", "Mayor de\n18"]
         for i, text in enumerate(headers):
-            ctk.CTkLabel(tabla_frame, text=text, text_color="gray", font=("Arial", 11)).grid(row=0, column=i, pady=2)
+            ctk.CTkLabel(tabla_frame, text=text, text_color="gray", font=("Arial", 12)).grid(row=0, column=i, pady=2)
         
         opciones_numeros = [str(n) for n in range(16)]
         
@@ -449,10 +452,12 @@ class RegistroUsuariaView(ctk.CTkFrame):
         ctk.CTkRadioButton(self.page2, text="Sí", variable=self.var_terapia, value="Sí", radiobutton_width=15, radiobutton_height=15, command=self.actualizar_campos_immujer).grid(row=4, column=1, sticky="w")
         ctk.CTkRadioButton(self.page2, text="No", variable=self.var_terapia, value="No", radiobutton_width=15, radiobutton_height=15, command=self.actualizar_campos_immujer).grid(row=4, column=1, sticky="e")
         
-        f_tie, self.ent_tiempo = self.crear_campo_entrada(self.page2, "Tiempo:")
+        f_tie, self.ent_tiempo = self.crear_campo_entrada(self.page2, "Tiempo desde última consulta:")
         f_tie.grid(row=4, column=2, padx=5, sticky="ew", pady=(0, 10))
-        
-        f_lug_terapia, self.ent_lugar_terapia = self.crear_campo_entrada(self.page2, "Lugar:")
+
+        opciones_lugar = ["Público", "Privado"]
+
+        f_lug_terapia, self.ent_lugar_terapia = self.crear_campo_opciones(self.page2, "Lugar:", opciones_lugar)
         f_lug_terapia.grid(row=4, column=3, padx=5, sticky="ew", pady=(0, 10))
 
         self.actualizar_campos_immujer()
@@ -477,7 +482,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         f_motivo = ctk.CTkFrame(self.page3, fg_color="transparent")
         f_motivo.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 15))
-        ctk.CTkLabel(f_motivo, text="Motivo de la consulta:", text_color="#555555", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(f_motivo, text="Motivo de la consulta (*):", text_color="#D60D0D", font=("Arial", 13, "bold")).pack(anchor="w", pady=(0, 2))
         
         self.txt_motivo = ctk.CTkTextbox(f_motivo, height=100, fg_color="white", text_color="black", border_width=1, border_color="#D3D3D3", corner_radius=8)
         self.txt_motivo.pack(fill="x")
@@ -508,7 +513,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
             text="+ Registrar Usuaria",
             fg_color="#FF6B35",
             text_color="white",
-            font=("Arial", 15, "bold"),
+            font=("Arial", 16, "bold"),
             height=35,
             corner_radius=8,
             command=self.guardar_registro
@@ -698,6 +703,9 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 self.editando_usuaria = False
                 self.refrescar_boton_registrar_editar()
 
+            if self.on_actualizar:
+                self.on_actualizar()
+                
             self.limpiar_formulario()    
             self.volver_al_inicio()
 
@@ -732,9 +740,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         self.ent_cuando.delete(0, "end")
         self.ent_tipo_apoyo.delete(0, "end")
-        
         self.ent_tiempo.delete(0, "end")
-        self.ent_lugar_terapia.delete(0, "end")
+        self.ent_lugar_terapia.set("Público")
 
         self.var_terapia.set("No")
         self.var_immujer.set("No")
@@ -773,7 +780,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
-        ctk.CTkLabel(modal, text="Seleccione una usuaria:", font=("Arial", 14, "bold"), text_color="#006B4D").pack(pady=(15, 5))
+        ctk.CTkLabel(modal, text="Seleccione una usuaria:", font=("Arial", 15, "bold"), text_color="#006B4D").pack(pady=(15, 5))
 
         scroll_frame = ctk.CTkScrollableFrame(modal, fg_color="white", border_width=1, border_color="#D3D3D3")
         scroll_frame.pack(fill="both", expand=True, padx=20, pady=10)
@@ -836,6 +843,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
             elif isinstance(widget, ctk.CTkTextbox):
                 widget.delete("1.0", "end")
                 widget.insert("1.0", valor)
+            elif isinstance(widget, ctk.CTkOptionMenu): 
+                widget.set(valor)
 
         def llenar_campos_usuaria(usuaria: Usuaria, direccion: Direccion, agresor: Agresor):
             if direccion != None:
@@ -894,4 +903,4 @@ class RegistroUsuariaView(ctk.CTkFrame):
             #self.padecimientos_seleccionados = []
             #self.btn_padecimiento.configure(text="📍 Seleccionar padecimientos...", text_color="gray", border_color="#D3D3D3", border_width=1)
 
-        ctk.CTkButton(modal, text="Cargar Datos", command=confirmar_seleccion, fg_color="#FF6B35", text_color="white", font=("Arial", 14, "bold")).pack(pady=(10, 20))
+        ctk.CTkButton(modal, text="Cargar Datos", command=confirmar_seleccion, fg_color="#FF6B35", text_color="white", font=("Arial", 15, "bold")).pack(pady=(10, 20))

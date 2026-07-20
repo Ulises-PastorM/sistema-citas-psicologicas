@@ -62,7 +62,7 @@ class MainWindow(ctk.CTk):
 
         self.vista_calendario = CalendarioView(self.vistas_frame)
         self.vista_registro = RegistroCitas(self.vistas_frame, on_actualizar=self.actualizar_vistas_dependientes)
-        self.vista_usuaria = RegistroUsuariaView(self.vistas_frame)
+        self.vista_usuaria = RegistroUsuariaView(self.vistas_frame, on_actualizar=self.actualizar_vistas_dependientes)
         self.vista_observacion = ObservacionesView(self.vistas_frame)
         self.vista_cuenta = MiCuentaView(self.vistas_frame)
 
@@ -108,3 +108,7 @@ class MainWindow(ctk.CTk):
 
         if hasattr(self.vista_observacion, 'refrescar_tabla'):
             self.vista_observacion.refrescar_tabla()
+            
+        if hasattr(self.vista_registro, 'refrescar_tabla'):
+            self.vista_registro.refrescar_tabla()
+            self.vista_registro.refrescar_usuarias()

@@ -14,7 +14,7 @@ class ObservacionesView(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
 
-        self.lbl_titulo = ctk.CTkLabel(self, text="Observaciones de la Sesión", font=("Arial", 22, "bold", "italic"), text_color="#006B4D")
+        self.lbl_titulo = ctk.CTkLabel(self, text="Observaciones de la Sesión", font=("Arial", 23, "bold", "italic"), text_color="#006B4D")
         self.lbl_titulo.grid(row=0, column=0, pady=(0, 5), sticky="w")
 
         self.linea = ctk.CTkFrame(self, height=1, fg_color="#D3D3D3")
@@ -25,7 +25,7 @@ class ObservacionesView(ctk.CTkFrame):
         self.card_frame.grid_columnconfigure(0, weight=1)
         self.card_frame.grid_rowconfigure(2, weight=1)
 
-        self.lbl_subtitulo = ctk.CTkLabel(self.card_frame, text="Registro de Sesiones", font=("Arial", 16, "bold", "italic"), text_color="#006B4D")
+        self.lbl_subtitulo = ctk.CTkLabel(self.card_frame, text="Registro de Sesiones", font=("Arial", 17, "bold", "italic"), text_color="#006B4D")
         self.lbl_subtitulo.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="w")
 
         self.tabla_header = ctk.CTkFrame(self.card_frame, fg_color="#7A1B6C", corner_radius=8, height=40)
@@ -35,7 +35,7 @@ class ObservacionesView(ctk.CTkFrame):
         
         columnas = ["Nombre", "Fecha", "Telefono", "Hora", "Estatus", "Editar"]
         for i, col in enumerate(columnas):
-            lbl = ctk.CTkLabel(self.tabla_header, text=col, text_color="white", font=("Arial", 13, "bold"), anchor="center")
+            lbl = ctk.CTkLabel(self.tabla_header, text=col, text_color="white", font=("Arial", 14, "bold"), anchor="center")
             lbl.grid(row=0, column=i, pady=10, sticky="ew")
 
         self.scroll_tabla = ctk.CTkScrollableFrame(self.card_frame, fg_color="transparent")
@@ -71,7 +71,12 @@ class ObservacionesView(ctk.CTkFrame):
 
                 for i in range(5):
                     color_texto = "#32CD32" if fila[4] == "Programada" and i == 4 else "black"
-                    lbl_dato = ctk.CTkLabel(row_frame, text=self.fecha_a_texto(fila[i]) if i == 1 else fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
+                    texto_celda = self.fecha_a_texto(fila[i]) if i == 1 else str(fila[i])
+                    
+                    if i == 0 and len(texto_celda) > 18:
+                        texto_celda = texto_celda[:15] + "..."
+                        
+                    lbl_dato = ctk.CTkLabel(row_frame, text=texto_celda, text_color=color_texto, font=("Arial", 13), anchor="center")
                     lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
                 
                 btn_editar = ctk.CTkButton(row_frame, text="Editar Observaciones", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, command=lambda f=fila: self.abrir_modal(f))
@@ -103,17 +108,17 @@ class ObservacionesView(ctk.CTkFrame):
         header.pack(fill="x", padx=1, pady=1)
         header.pack_propagate(False)
 
-        lbl_modal_title = ctk.CTkLabel(header, text="Observaciones", font=("Arial", 16, "bold", "italic"), text_color="white")
+        lbl_modal_title = ctk.CTkLabel(header, text="Observaciones", font=("Arial", 17, "bold", "italic"), text_color="white")
         lbl_modal_title.pack(side="left", padx=15)
 
-        btn_close = ctk.CTkButton(header, text="X", font=("Arial", 18, "bold"), text_color="white", fg_color="transparent", hover_color="#E55A2B", width=30, command=modal.destroy)
+        btn_close = ctk.CTkButton(header, text="X", font=("Arial", 19, "bold"), text_color="white", fg_color="transparent", hover_color="#E55A2B", width=30, command=modal.destroy)
         btn_close.pack(side="right", padx=10)
 
         content = ctk.CTkFrame(container, fg_color="transparent")
         content.pack(fill="both", expand=True, padx=25, pady=15)
 
-        ctk.CTkLabel(content, text=nombre_usuaria, font=("Arial", 16, "bold", "italic"), text_color="black").pack(anchor="w")
-        ctk.CTkLabel(content, text="Observaciones de la sesión", font=("Arial", 11, "bold", "italic"), text_color="black").pack(anchor="w", pady=(0, 5))
+        ctk.CTkLabel(content, text=nombre_usuaria, font=("Arial", 17, "bold", "italic"), text_color="black").pack(anchor="w")
+        ctk.CTkLabel(content, text="Observaciones de la sesión", font=("Arial", 12, "bold", "italic"), text_color="black").pack(anchor="w", pady=(0, 5))
 
         self.txt_obs = ctk.CTkTextbox(content, fg_color="white", text_color="black", border_width=1, border_color="#D3D3D3", height=100)
         self.txt_obs.pack(fill="x", pady=(0, 15))
@@ -124,7 +129,7 @@ class ObservacionesView(ctk.CTkFrame):
         footer_frame = ctk.CTkFrame(content, fg_color="transparent")
         footer_frame.pack(fill="x", pady=(5, 0))
 
-        lbl_mensaje = ctk.CTkLabel(footer_frame, text="", font=("Arial", 12, "bold"))
+        lbl_mensaje = ctk.CTkLabel(footer_frame, text="", font=("Arial", 13, "bold"))
         lbl_mensaje.pack(side="left")
 
         def guardar_observaciones():
@@ -144,5 +149,5 @@ class ObservacionesView(ctk.CTkFrame):
             else:
                 lbl_mensaje.configure(text=f"Error: {resultado.get('error')}", text_color="red")
 
-        btn_guardar = ctk.CTkButton(footer_frame, text="Guardar", fg_color="#005A43", hover_color="#004030", text_color="white", font=("Arial", 14, "bold", "italic"), corner_radius=8, height=35, command=guardar_observaciones)
+        btn_guardar = ctk.CTkButton(footer_frame, text="Guardar", fg_color="#005A43", hover_color="#004030", text_color="white", font=("Arial", 15, "bold", "italic"), corner_radius=8, height=35, command=guardar_observaciones)
         btn_guardar.pack(side="right")

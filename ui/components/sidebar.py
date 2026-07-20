@@ -12,7 +12,7 @@ class Sidebar(ctk.CTkFrame):
             imagen_logo = ctk.CTkImage(light_image=Image.open(ruta_logo), size=(200, 70))
             self.lbl_logo = ctk.CTkLabel(self, image=imagen_logo, text="")
         except FileNotFoundError:
-            self.lbl_logo = ctk.CTkLabel(self, text="[ IMAGEN LOGO ]", font=("Arial", 16, "bold"), text_color="#7A1B6C")
+            self.lbl_logo = ctk.CTkLabel(self, text="[ IMAGEN LOGO ]", font=("Arial", 17, "bold"), text_color="#7A1B6C")
         self.lbl_logo.grid(row=0, column=0, padx=20, pady=(20, 30))
 
         self.iconos_n = {}
@@ -33,7 +33,7 @@ class Sidebar(ctk.CTkFrame):
                 self.iconos_n[k] = self.iconos_b[k] = None
 
         btn_estilo = {
-            "fg_color": "#E0E0E0", "text_color": "black", "font": ("Arial", 14, "bold", "italic"),
+            "fg_color": "#E0E0E0", "text_color": "black", "font": ("Arial", 15, "bold", "italic"),
             "corner_radius": 8, "height": 45, "compound": "left", "anchor": "w"
         }
         
@@ -76,7 +76,7 @@ class Sidebar(ctk.CTkFrame):
             border_color="#FF6B35",
             border_width=1,
             hover_color="#FFF0EB",
-            font=("Arial", 14, "bold"),
+            font=("Arial", 15, "bold"),
             corner_radius=8,
             height=40,
             command=lambda: self.navegar("cuenta") 
@@ -88,7 +88,7 @@ class Sidebar(ctk.CTkFrame):
             text="Acerca del Sistema", 
             fg_color="transparent", 
             text_color="#7A1B6C", 
-            font=("Arial", 12, "underline"), 
+            font=("Arial", 13, "underline"), 
             hover_color="#D3D3D3", 
             command=self.mostrar_creditos
         )
@@ -121,12 +121,12 @@ class Sidebar(ctk.CTkFrame):
     def mostrar_creditos(self):
         modal = ctk.CTkToplevel(self)
         modal.title("Acerca del Sistema")
-        modal.geometry("450x320")
+        modal.geometry("450x340")
         modal.resizable(False, False)
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
-        ctk.CTkLabel(modal, text="Sistema de Gestión - IMMUJER", font=("Arial", 16, "bold"), text_color="#7A1B6C").pack(pady=(20, 10))
+        ctk.CTkLabel(modal, text="Sistema de Gestión - IMMUJER", font=("Arial", 17, "bold"), text_color="#7A1B6C").pack(pady=(20, 10))
 
         info_texto = (
             "Este sistema fue desarrollado como proyecto\n"
@@ -141,6 +141,6 @@ class Sidebar(ctk.CTkFrame):
             "INSTANCIA MUNICIPAL DE LA MUJER."
         )
 
-        ctk.CTkLabel(modal, text=info_texto, font=("Arial", 13), justify="center").pack(pady=10)
+        ctk.CTkLabel(modal, text=info_texto, font=("Arial", 14), justify="center").pack(pady=10)
 
         ctk.CTkButton(modal, text="Cerrar", command=modal.destroy, fg_color="#FF6B35", text_color="white").pack(pady=(10, 20))

@@ -17,14 +17,14 @@ class RegistroCitas(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.lbl_titulo = ctk.CTkLabel(self, text="Registro de Citas para Atención Psicológica", font=("Arial", 20, "bold", "italic"), text_color="#006B4D")
+        self.lbl_titulo = ctk.CTkLabel(self, text="Registro de Citas para Atención Psicológica", font=("Arial", 21, "bold", "italic"), text_color="#006B4D")
         self.lbl_titulo.grid(row=0, column=0, pady=(0, 10), sticky="w")
 
         self.card_frame = ctk.CTkScrollableFrame(self, fg_color="#F4F4F4", corner_radius=15)
         self.card_frame.grid(row=1, column=0, sticky="nsew")
         self.card_frame.grid_columnconfigure((0, 1), weight=1)
 
-        self.lbl_subtitulo1 = ctk.CTkLabel(self.card_frame, text="Registro de Citas", font=("Arial", 16, "bold", "italic"), text_color="#006B4D")
+        self.lbl_subtitulo1 = ctk.CTkLabel(self.card_frame, text="Registro de Citas", font=("Arial", 17, "bold", "italic"), text_color="#006B4D")
         self.lbl_subtitulo1.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="w")
 
         self.tabla_header = ctk.CTkFrame(self.card_frame, fg_color="#7A1B6C", corner_radius=8, height=40)
@@ -35,7 +35,7 @@ class RegistroCitas(ctk.CTkFrame):
         self.estados_cita_list = None
         columnas = ["Nombre", "Fecha", "Telefono", "Hora", "Estatus", "Editar"]
         for i, col in enumerate(columnas):
-            lbl = ctk.CTkLabel(self.tabla_header, text=col, text_color="white", font=("Arial", 13, "bold"), anchor="center")
+            lbl = ctk.CTkLabel(self.tabla_header, text=col, text_color="white", font=("Arial", 14, "bold"), anchor="center")
             lbl.grid(row=0, column=i, pady=10, sticky="ew")
 
         self.scroll_tabla = ctk.CTkScrollableFrame(self.card_frame, fg_color="transparent", height=160)
@@ -44,10 +44,10 @@ class RegistroCitas(ctk.CTkFrame):
         self.cargar_catalogos()
         self.refrescar_tabla()
 
-        self.lbl_subtitulo2 = ctk.CTkLabel(self.card_frame, text="Registrar Nueva Cita", font=("Arial", 16, "bold", "italic"), text_color="#006B4D")
+        self.lbl_subtitulo2 = ctk.CTkLabel(self.card_frame, text="Registrar Nueva Cita", font=("Arial", 17, "bold", "italic"), text_color="#006B4D")
         self.lbl_subtitulo2.grid(row=3, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="w")
 
-        lbl_kwargs = {"font": ("Arial", 12, "bold"), "text_color": "#4A4A4A"}
+        lbl_kwargs = {"font": ("Arial", 13, "bold"), "text_color": "#4A4A4A"}
         opt_kwargs = {"fg_color": "white", "text_color": "black", "button_color": "#E6E6E6", "button_hover_color": "#D3D3D3", 
                       "dropdown_fg_color": "white", "dropdown_text_color": "black", "dropdown_hover_color": "#F0F0F0", 
                       "corner_radius": 6, "height": 38}
@@ -85,13 +85,13 @@ class RegistroCitas(ctk.CTkFrame):
         self.opt_hora.set("Hora")
         self.opt_hora.pack(side="left", padx=(0, 5))
 
-        ctk.CTkLabel(self.frame_horario, text=":", font=("Arial", 16, "bold"), text_color="black").pack(side="left")
+        ctk.CTkLabel(self.frame_horario, text=":", font=("Arial", 17, "bold"), text_color="black").pack(side="left")
 
         self.opt_minuto = ctk.CTkOptionMenu(self.frame_horario, values=["00", "15", "30", "45"], width=85, **opt_kwargs)
         self.opt_minuto.set("Min.")
         self.opt_minuto.pack(side="left", padx=(5, 0))
 
-        self.btn_registrar = ctk.CTkButton(self.card_frame, text="+ Registrar Cita", fg_color="#FF6B35", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=40, command=self.guardar_registro)
+        self.btn_registrar = ctk.CTkButton(self.card_frame, text="+ Registrar Cita", fg_color="#FF6B35", text_color="white", font=("Arial", 15, "bold"), corner_radius=8, height=40, command=self.guardar_registro)
         self.btn_registrar.grid(row=7, column=1, padx=20, pady=(10, 30), sticky="e")
 
     def guardar_registro(self):
@@ -204,7 +204,7 @@ class RegistroCitas(ctk.CTkFrame):
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
-        ctk.CTkLabel(modal, text="Editar Cita", font=("Arial", 24, "bold"), text_color="#7A1B6C").pack(pady=(20, 15))
+        ctk.CTkLabel(modal, text="Editar Cita", font=("Arial", 25, "bold"), text_color="#7A1B6C").pack(pady=(20, 15))
 
         entry_style = {"fg_color": "white", "text_color": "black", "border_width": 1, "border_color": "#D3D3D3", "corner_radius": 6, "height": 35}
 
@@ -213,7 +213,7 @@ class RegistroCitas(ctk.CTkFrame):
                             "corner_radius": 6, "height": 35}
         
         def crear_input_modal(texto, valor_inicial, editable=True):
-            ctk.CTkLabel(modal, text=texto, font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40)
+            ctk.CTkLabel(modal, text=texto, font=("Arial", 13, "bold"), text_color="#555555").pack(anchor="w", padx=40)
             ent = ctk.CTkEntry(modal, **entry_style)
             ent.insert(0, valor_inicial) 
             
@@ -243,7 +243,7 @@ class RegistroCitas(ctk.CTkFrame):
         except (ValueError, IndexError):
             hora_act, min_act = "Hora", "Min."
 
-        ctk.CTkLabel(modal, text="Fecha:", font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40, pady=(0, 0))
+        ctk.CTkLabel(modal, text="Fecha:", font=("Arial", 13, "bold"), text_color="#555555").pack(anchor="w", padx=40, pady=(0, 0))
         frame_fecha_modal = ctk.CTkFrame(modal, fg_color="transparent")
         frame_fecha_modal.pack(fill="x", padx=40, pady=(0, 10))
 
@@ -259,7 +259,7 @@ class RegistroCitas(ctk.CTkFrame):
         opt_ano_modal.set(anio_act)
         opt_ano_modal.pack(side="left", padx=(5, 0))
 
-        ctk.CTkLabel(modal, text="Hora (HH:MM):", font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40, pady=(0, 0))
+        ctk.CTkLabel(modal, text="Hora (HH:MM):", font=("Arial", 13, "bold"), text_color="#555555").pack(anchor="w", padx=40, pady=(0, 0))
         frame_horario_modal = ctk.CTkFrame(modal, fg_color="transparent")
         frame_horario_modal.pack(fill="x", padx=40, pady=(0, 10))
 
@@ -267,20 +267,17 @@ class RegistroCitas(ctk.CTkFrame):
         opt_hora_modal.set(hora_act)
         opt_hora_modal.pack(side="left", padx=(0, 5))
 
-        ctk.CTkLabel(frame_horario_modal, text=":", font=("Arial", 16, "bold"), text_color="black").pack(side="left")
+        ctk.CTkLabel(frame_horario_modal, text=":", font=("Arial", 17, "bold"), text_color="black").pack(side="left")
 
         opt_minuto_modal = ctk.CTkOptionMenu(frame_horario_modal, values=["00", "15", "30", "45"], width=85, **opt_modal_kwargs)
         opt_minuto_modal.set(min_act)
         opt_minuto_modal.pack(side="left", padx=(5, 0))
         
         estados_cita = [e.estado_cita for e in self.estados_cita_list]
-        ctk.CTkLabel(modal, text="Estatus:", font=("Arial", 12, "bold"), text_color="#555555").pack(anchor="w", padx=40)
+        ctk.CTkLabel(modal, text="Estatus:", font=("Arial", 13, "bold"), text_color="#555555").pack(anchor="w", padx=40)
         opt_estatus = ctk.CTkOptionMenu(modal, values=estados_cita, **opt_modal_kwargs)
         opt_estatus.set(estatus) 
         opt_estatus.pack(fill="x", padx=40, pady=(0, 10))
-
-        lbl_mensaje = ctk.CTkLabel(modal, text="", font=("Arial", 12, "bold"))
-        lbl_mensaje.pack(pady=(5, 0))
 
         def guardar_modificacion():
             dia_sel = opt_dia_modal.get()
@@ -290,7 +287,7 @@ class RegistroCitas(ctk.CTkFrame):
             min_sel = opt_minuto_modal.get()
             
             if dia_sel == "Día" or mes_sel == "Mes" or anio_sel == "Año" or hora_sel == "Hora" or min_sel == "Min.":
-                lbl_mensaje.configure(text="Faltan datos de fecha u hora.", text_color="#A80A0A")
+                messagebox.showwarning("Faltan datos", "Faltan datos de fecha u hora.")
                 return
 
             fecha_armada = f"{anio_sel}-{meses_dict[mes_sel]}-{dia_sel}"
@@ -298,7 +295,7 @@ class RegistroCitas(ctk.CTkFrame):
             try:
                 datetime.strptime(fecha_armada, "%Y-%m-%d")
             except ValueError:
-                lbl_mensaje.configure(text=f"Error: El {dia_sel} de {mes_sel} no existe.", text_color="#A80A0A")
+                messagebox.showerror("Fecha inválida", f"Error: El {dia_sel} de {mes_sel} no existe.")
                 return
             
             hora_armada = f"{hora_sel}:{min_sel}"
@@ -307,8 +304,7 @@ class RegistroCitas(ctk.CTkFrame):
             nuevo_estado_cita = self._texto_a_id(self.estados_cita_list, "estado_cita", opt_estatus.get(), "id_estado_cita")
             tipo_mensaje = "cita_actualizada"
 
-            if opt_estatus.get() != estatus and nuevo_estado_cita != 1: # Si se cambió el estatus y el nuevo estatus no es 1 -> "Programada"
-                # Se ignoran los cambios en fecha y hora
+            if opt_estatus.get() != estatus and nuevo_estado_cita != 1: 
                 cita_modificada = Cita(
                     cita_actual.fecha,
                     cita_actual.usuaria_id,
@@ -318,16 +314,17 @@ class RegistroCitas(ctk.CTkFrame):
                     cita_actual.id_cita
                 )
 
-                confirmacion = messagebox.askyesno("Actualizar Cita", f"¿Está segura de que desea marcar la cita como {opt_estatus.get()}?")
+                confirmacion = messagebox.askyesno("Confirmar Cambios", f"¿Guardar cambios hechos en el estatus de la cita a '{opt_estatus.get()}'?")
         
                 if not confirmacion:
                     return
                 btn_guardar.configure(state="disabled")
-                if nuevo_estado_cita == 2: # Atendida
+                
+                if nuevo_estado_cita == 2: 
                     tipo_mensaje = "cita_atendida"
-                elif nuevo_estado_cita == 3: # Cancelada
+                elif nuevo_estado_cita == 3: 
                     tipo_mensaje = "cita_cancelada"
-                elif nuevo_estado_cita == 4: # Usuaria No asistió
+                elif nuevo_estado_cita == 4: 
                     tipo_mensaje = "no_asistio"
                 
                 res_actualizar_cita = service_actualizar_cita(cita_modificada)
@@ -336,22 +333,29 @@ class RegistroCitas(ctk.CTkFrame):
                     if self.on_actualizar:
                         self.on_actualizar()
                     estado_servidor_whatsapp = obtener_estado_servidor()
+                    
                     if estado_servidor_whatsapp["status"] == "connected":
-                        usuaria_info =  service_obtener_usuaria_por_id(cita_actual.usuaria_id)
+                        usuaria_info = service_obtener_usuaria_por_id(cita_actual.usuaria_id)
                         envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, cita_modificada, tipo_mensaje)
                         if envio_mensaje["success"]:
                             service_registrar_envio_whatsapp(cita_id=cita_modificada.id_cita, mensaje=envio_mensaje["mensaje"])
-                            lbl_mensaje.configure(text="✅ Cita actualizada correctamente", text_color="#32CD32")
+                            messagebox.showinfo("Éxito", "Cita actualizada correctamente.")
                         else:
-                            lbl_mensaje.configure(text="Cita actualizada, pero error al enviar notificación: " + envio_mensaje["error"], text_color="#B65F18")
+                            messagebox.showwarning("Aviso", "Cita actualizada, pero error al enviar notificación: " + envio_mensaje["error"])
                     else:
-                        lbl_mensaje.configure(text="Cita actualizada, pero error al enviar notificación: No se pudo conectar con el servidor de Whatsapp", text_color="#B65F18")
-                    self.after(1500, modal.destroy)
+                        messagebox.showwarning("Aviso", "Cita actualizada, pero error al enviar notificación: No se pudo conectar con el servidor de Whatsapp.")
+                    
+                    modal.destroy()
                 else:
-                    lbl_mensaje.configure(text="Ha ocurrido un error: " + res_actualizar_cita["error"], text_color="#A80A0A")
-                    self.after(1500, modal.destroy)
+                    messagebox.showerror("Error", "Ha ocurrido un error: " + res_actualizar_cita["error"])
+                    btn_guardar.configure(state="normal")
 
             elif fecha_armada != cita_actual.fecha or hora_armada != cita_actual.hora:
+                
+                confirmacion = messagebox.askyesno("Confirmar Cambios", "¿Guardar cambios hechos en la fecha/hora de la cita?")
+                if not confirmacion:
+                    return
+                    
                 btn_guardar.configure(state="disabled")
                 cita_modificada = Cita(
                     fecha_armada,
@@ -362,30 +366,32 @@ class RegistroCitas(ctk.CTkFrame):
                     cita_actual.id_cita
                 )
                 res_actualizar_cita = service_actualizar_cita(cita_modificada)
+                
                 if res_actualizar_cita["success"]:
                     self.refrescar_tabla()
                     if self.on_actualizar:
                         self.on_actualizar()
                     estado_servidor_whatsapp = obtener_estado_servidor()
+                    
                     if estado_servidor_whatsapp["status"] == "connected":
-                        usuaria_info =  service_obtener_usuaria_por_id(cita_actual.usuaria_id)
+                        usuaria_info = service_obtener_usuaria_por_id(cita_actual.usuaria_id)
                         envio_mensaje = enviar_mensaje_a_usuaria(usuaria_info, cita_modificada, tipo_mensaje)
                         if envio_mensaje["success"]:
                             service_registrar_envio_whatsapp(cita_id=cita_modificada.id_cita, mensaje=envio_mensaje["mensaje"])
-                            lbl_mensaje.configure(text="✅ Cita actualizada correctamente", text_color="#32CD32")
+                            messagebox.showinfo("Éxito", "Cita actualizada correctamente.")
                         else:
-                            lbl_mensaje.configure(text="Cita actualizada, pero error al enviar notificación: " + envio_mensaje["error"], text_color="#B65F18")
+                            messagebox.showwarning("Aviso", "Cita actualizada, pero error al enviar notificación: " + envio_mensaje["error"])
                     else:
-                        lbl_mensaje.configure(text="Cita actualizada, pero error al enviar notificación: No se pudo conectar con el servidor de Whatsapp", text_color="#B65F18")
-                    self.after(1500, modal.destroy)
+                        messagebox.showwarning("Aviso", "Cita actualizada, pero error al enviar notificación: No se pudo conectar con el servidor de Whatsapp.")
+                    
+                    modal.destroy()
                 else:
-                    lbl_mensaje.configure(text="Ha ocurrido un error: " + res_actualizar_cita["error"], text_color="#A80A0A")
-                    self.after(1500, modal.destroy)
+                    messagebox.showerror("Error", "Ha ocurrido un error: " + res_actualizar_cita["error"])
+                    btn_guardar.configure(state="normal")
             else:
-                # No hubo cambios
-                self.after(500, modal.destroy)
+                modal.destroy()
 
-        btn_guardar = ctk.CTkButton(modal, text="Guardar cambios", command=guardar_modificacion, fg_color="#FF6B35", hover_color="#E55B2B", text_color="white", font=("Arial", 14, "bold"), corner_radius=8, height=40)
+        btn_guardar = ctk.CTkButton(modal, text="Guardar cambios", command=guardar_modificacion, fg_color="#FF6B35", hover_color="#E55B2B", text_color="white", font=("Arial", 15, "bold"), corner_radius=8, height=40)
         btn_guardar.pack(pady=(10, 20))
         
     def refrescar_tabla(self):
@@ -403,7 +409,12 @@ class RegistroCitas(ctk.CTkFrame):
 
                 for i in range(5):
                     color_texto = "#32CD32" if fila[4] == "Programada" and i == 4 else "black"
-                    lbl_dato = ctk.CTkLabel(row_frame, text=self.fecha_a_texto(fila[i]) if i == 1 else fila[i], text_color=color_texto, font=("Arial", 12), anchor="center")
+                    texto_celda = str(self.fecha_a_texto(fila[i]) if i == 1 else fila[i])
+                    
+                    if i == 0 and len(texto_celda) > 18: 
+                        texto_celda = texto_celda[:15] + "..."
+                        
+                    lbl_dato = ctk.CTkLabel(row_frame, text=texto_celda, text_color=color_texto, font=("Arial", 13), anchor="center")
                     lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
                 
                 btn_editar = ctk.CTkButton(row_frame, text="Editar ✏️", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, 

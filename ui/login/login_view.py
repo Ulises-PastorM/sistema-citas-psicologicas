@@ -15,10 +15,10 @@ class LoginView(ctk.CTkFrame):
             img_logo = ctk.CTkImage(light_image=Image.open("assets/logo.png"), size=(200, 70))
             lbl_logo = ctk.CTkLabel(self.card, image=img_logo, text="")
         except FileNotFoundError:
-            lbl_logo = ctk.CTkLabel(self.card, text="[ IMAGEN LOGO ]", font=("Arial", 20, "bold"), text_color="#7A1B6C")
+            lbl_logo = ctk.CTkLabel(self.card, text="[ IMAGEN LOGO ]", font=("Arial", 21, "bold"), text_color="#7A1B6C")
         lbl_logo.pack(pady=(25, 10))
 
-        ctk.CTkLabel(self.card, text="Sistema de Gestión de Agenda de Sesiones", font=("Arial", 16, "bold", "italic"), text_color="#006B4D").pack(pady=(0, 20))
+        ctk.CTkLabel(self.card, text="Sistema de Gestión de Agenda de Sesiones", font=("Arial", 17, "bold", "italic"), text_color="#006B4D").pack(pady=(0, 20))
 
         sub_frame = ctk.CTkFrame(self.card, fg_color="transparent")
         sub_frame.pack(fill="x", padx=40, pady=(0, 20))
@@ -28,7 +28,7 @@ class LoginView(ctk.CTkFrame):
         sub_frame.grid_columnconfigure(2, weight=1)
         
         ctk.CTkFrame(sub_frame, height=2, fg_color="#E0E0E0").grid(row=0, column=0, sticky="ew", padx=(0, 15))
-        ctk.CTkLabel(sub_frame, text="Iniciar Sesión", font=("Arial", 18, "bold", "italic"), text_color="#7A1B6C").grid(row=0, column=1)
+        ctk.CTkLabel(sub_frame, text="Iniciar Sesión", font=("Arial", 19, "bold", "italic"), text_color="#7A1B6C").grid(row=0, column=1)
         ctk.CTkFrame(sub_frame, height=2, fg_color="#E0E0E0").grid(row=0, column=2, sticky="ew", padx=(15, 0))
         
         frame_user = ctk.CTkFrame(self.card, fg_color="white", border_width=2, border_color="#E8E8E8", corner_radius=20, height=45)
@@ -57,10 +57,10 @@ class LoginView(ctk.CTkFrame):
         self.ent_password = ctk.CTkEntry(frame_pwd, placeholder_text="Contraseña", show="*", fg_color="white", border_width=0, text_color="black")
         self.ent_password.pack(side="left", fill="both", expand=True, padx=(0, 15), pady=2)
         
-        self.lbl_error = ctk.CTkLabel(self.card, text="", text_color="red", font=("Arial", 12, "bold"))
+        self.lbl_error = ctk.CTkLabel(self.card, text="", text_color="red", font=("Arial", 13, "bold"))
         self.lbl_error.pack(pady=(2, 5))
         
-        self.btn_login = ctk.CTkButton(self.card, text="Iniciar Sesión", fg_color="#FF6B35", hover_color="#E55A2B", text_color="white", font=("Arial", 16, "bold"), corner_radius=20, height=45, command=self.validar_login)
+        self.btn_login = ctk.CTkButton(self.card, text="Iniciar Sesión", fg_color="#FF6B35", hover_color="#E55A2B", text_color="white", font=("Arial", 17, "bold"), corner_radius=20, height=45, command=self.validar_login)
         self.btn_login.pack(fill="x", padx=60, pady=(0, 5))
 
         #ctk.CTkLabel(self.card, text="¿Olvidaste tu contraseña?", font=("Arial", 12, "bold", "italic"), text_color="#7A1B6C", cursor="hand2").pack(pady=(5, 0))
