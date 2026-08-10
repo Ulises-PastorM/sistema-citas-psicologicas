@@ -12,8 +12,6 @@ from models.catalogos_model import (
 )
 
 
-# ─── Helpers internos ─────────────────────────────────────────────────────────
-
 def _fetchall(query: str, params: tuple = ()) -> list[dict]:
     conn = get_connection()
     enable_foreign_keys(conn)

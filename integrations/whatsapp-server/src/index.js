@@ -195,7 +195,7 @@ app.post('/send-message', async (req, res) => {
     if (!await client.isRegisteredUser(chatId))
       return res.status(404).json({ error: `El número ${phone} no está registrado en WhatsApp.` });
     const response = await client.sendMessage(chatId, message);
-    return res.json({ success: true, messageId: response.id._serialized, to: phone, timestamp: response.timestamp });
+    return res.json({ success: true, messageId: response?.id?._serialized || null, to: phone, timestamp: response?.timestamp || Math.floor(Date.now() / 1000), });
   } catch (err) {
     console.error('Error al enviar mensaje:', err);
     return res.status(500).json({ error: 'Error interno.', detail: err.message });

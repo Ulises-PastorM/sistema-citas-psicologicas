@@ -59,9 +59,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.estatus_list = None
         
         self.lista_padecimientos = [
-            "Violencia física", "Violencia psicológica", "Violencia sexual", 
-            "Violencia económica", "Violencia patrimonial", "Violencia vicaria", 
-            "Violencia digital", "Pensión alimenticia", "Guardia y custodia", "Otro"
+            "Diabetes", "Hipertensión", "Obesidad", "Enfermedades cardiovasculares", "Asma",
+            "Enfermedad renal crónica", "Enfermedades de la tiroides", "Artritis", "Gastritis", "Otro"
         ]
 
         self.lbl_titulo = ctk.CTkLabel(self, text="Registro de Usuaria para Atención Psicológica", font=("Arial", 21, "bold", "italic"), text_color="#006B4D")
@@ -410,30 +409,26 @@ class RegistroUsuariaView(ctk.CTkFrame):
 
         tabla_frame = ctk.CTkFrame(self.page2, fg_color="transparent")
         tabla_frame.grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 10))
-        for i in range(4): tabla_frame.grid_columnconfigure(i, weight=1)
 
-        headers = ["", "Edad de:\n0-14", "Edad de:\n14-18", "Mayor de\n18"]
-        for i, text in enumerate(headers):
-            ctk.CTkLabel(tabla_frame, text=text, text_color="gray", font=("Arial", 12)).grid(row=0, column=i, pady=2)
-        
-        opciones_numeros = [str(n) for n in range(16)]
-        
-        self.menus_familia = [] 
+        tabla_frame.grid_columnconfigure(0, weight=0)
+        tabla_frame.grid_columnconfigure(1, weight=1)
+        tabla_frame.grid_columnconfigure(2, weight=1)
+        tabla_frame.grid_columnconfigure(3, weight=1)
 
-        ctk.CTkLabel(tabla_frame, text="Mujeres:", text_color="gray").grid(row=1, column=0, sticky="e", padx=5)
-        for i in range(1, 4): 
-            menu = ctk.CTkOptionMenu(tabla_frame, values=opciones_numeros, **self.option_style)
-            menu.set("0") 
-            menu.grid(row=1, column=i, padx=5, pady=2, sticky="ew")
-            self.menus_familia.append(menu)
+        # Mujeres
+        ctk.CTkLabel(tabla_frame, text="Mujeres:", text_color="gray").grid(row=1, column=0, sticky="w", padx=0, pady=2)
+
+        self.ent_mujeres = ctk.CTkEntry(tabla_frame, **self.entry_style)
+        self.ent_mujeres.insert(0, "0")
+        self.ent_mujeres.grid(row=1, column=1, columnspan=3, padx=(10, 0), pady=2, sticky="ew")
+
+        # Hombres
+        ctk.CTkLabel(tabla_frame, text="Hombres:", text_color="gray").grid(row=2, column=0, sticky="w", padx=0, pady=2)
+
+        self.ent_hombres = ctk.CTkEntry(tabla_frame, **self.entry_style)
+        self.ent_hombres.insert(0, "0")
+        self.ent_hombres.grid(row=2, column=1, columnspan=3, padx=(10, 0), pady=2, sticky="ew")
         
-        ctk.CTkLabel(tabla_frame, text="Hombres:", text_color="gray").grid(row=2, column=0, sticky="e", padx=5)
-        for i in range(1, 4): 
-            menu = ctk.CTkOptionMenu(tabla_frame, values=opciones_numeros, **self.option_style)
-            menu.set("0") 
-            menu.grid(row=2, column=i, padx=5, pady=2, sticky="ew")
-            self.menus_familia.append(menu)
-            
         ctk.CTkFrame(self.page2, height=2, fg_color="#D3D3D3").grid(row=2, column=0, columnspan=4, sticky="ew", pady=10)
 
         ctk.CTkLabel(self.page2, text="Anteriormente\n¿Acudió a INMUJER?", text_color="gray").grid(row=3, column=0, sticky="e", padx=5)

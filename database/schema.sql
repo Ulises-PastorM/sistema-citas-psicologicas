@@ -176,6 +176,13 @@ CREATE TABLE IF NOT EXISTS usuarias_agresores (
 		REFERENCES agresores("id_agresor")
 );
 
+CREATE TABLE IF NOT EXISTS usuarias_inasistencias (
+	"usuaria_id"	INTEGER NOT NULL,
+	"inasistencias"	INTEGER NOT NULL,
+	FOREIGN KEY ("usuaria_id")
+		REFERENCES usuarias("id_usuaria")
+)
+
 -- CATÁLOGOS
 
 -- domicilio_estatus

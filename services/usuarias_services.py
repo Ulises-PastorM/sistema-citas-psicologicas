@@ -9,7 +9,10 @@ from repositories.usuarias_repository import (
     crear_usuaria_direccion,
     obtener_usuaria_por_telefono,
     obtener_usuaria_direccion,
-    obtener_usuaria_agresor
+    obtener_usuaria_agresor,
+    crear_usuaria_inasistencia,
+    obtener_usuaria_inasistencia,
+    actualizar_usuaria_inasistencia
 )
 
 
@@ -192,3 +195,39 @@ def service_obtener_usuaria_agresor(usuaria_id) -> dict | None:
     except Exception as e:
         print(f"[usuarias_services_agresor] Error al obtener usuaria_agresor: {e}")
         return None
+
+def service_crear_usuaria_inasistencia(usuaria_id, num_inasistencia):
+    try:
+        crear_usuaria_inasistencia(usuaria_id, num_inasistencia)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": f"Error al crear la usuaria: {str(e)}"}
+
+def service_obtener_usuaria_inasistencia(usuaria_id) -> dict | None:
+    if not usuaria_id:
+        return None
+    
+    try:
+        return obtener_usuaria_inasistencia(usuaria_id)
+    except Exception as e:
+        print(f"[usuarias_services_inasistencia] Error al obtener usuaria_inasistencia: {e}")
+        return None
+
+def service_actualizar_usuaria_inasistencia(usuaria_id, num_inasistencia) -> dict:
+    if not usuaria_id:
+        return {"success": False, "error": "El ID de la usuaria es requerido."}
+
+    if not num_inasistencia or num_inasistencia < 0:
+        return {"success": False, "error": "Numero incorrecto de inasistencias."}
+
+    existente = obtener_usuaria_inasistencia(usuaria_id)
+    if not existente:
+        return {"success": False, "error": f"No se encontró una usuaria con ID {usuaria_id} o no tiene inasistencias."}
+
+    try:
+        filas = actualizar_usuaria_inasistencia(usuaria_id, num_inasistencia)
+        if filas == 0:
+            return {"success": False, "error": "No se realizaron cambios."}
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": f"Error al actualizar usuarias inasistencias: {str(e)}"}

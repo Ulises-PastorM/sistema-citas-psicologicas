@@ -1,13 +1,28 @@
 import sys
 import subprocess
 from pathlib import Path
+import shutil
 
 import customtkinter as ctk
 from ui.main_window import MainWindow
 
 # Ruta al servidor WhatsApp
 WHATSAPP_SERVER_PATH = Path(__file__).parent / "integrations" / "whatsapp-server"
+BASE_DIR = Path(__file__).parent
+SERVER_ENTRY = WHATSAPP_SERVER_PATH / "src" / "index.js"
 
+
+def obtener_node():
+    """
+    Devuelve la ruta al ejecutable de Node.
+    En desarrollo usa el Node instalado.
+    En producción usa runtime/node.exe.
+    """
+
+    if getattr(sys, "frozen", False):
+        return BASE_DIR / "runtime" / "node.exe"
+
+    return shutil.which("node")
 
 def iniciar_servidor_whatsapp() -> subprocess.Popen | None:
     """
@@ -19,8 +34,12 @@ def iniciar_servidor_whatsapp() -> subprocess.Popen | None:
         return None
 
     try:
+        NODE = obtener_node()
         proceso = subprocess.Popen(
-            ["npm", "start"],
+            [
+                str(NODE),
+                str(SERVER_ENTRY)
+            ],
             cwd=WHATSAPP_SERVER_PATH,
             shell=(sys.platform == "win32"),
             # Redirigir salida

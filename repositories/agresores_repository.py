@@ -2,8 +2,6 @@ from database.connection import get_connection, enable_foreign_keys
 from models.agresor_model import Agresor, UsuariaAgresor
 
 
-# ─── Agresores ────────────────────────────────────────────────────────────────
-
 def crear_agresor(agresor: Agresor) -> int:
     """Inserta un nuevo agresor y devuelve su id_agresor generado."""
     conn = get_connection()

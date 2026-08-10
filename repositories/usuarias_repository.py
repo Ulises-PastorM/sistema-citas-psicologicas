@@ -231,3 +231,47 @@ def obtener_usuaria_agresor(usuaria_id) -> dict | None:
     conn.close()
 
     return {"usuaria_id": dict(resultado).get("usuaria_id"), "agresor_id": dict(resultado).get("agresor_id")} if resultado else None
+
+def crear_usuaria_inasistencia(usuaria_id, num_inasistencia):
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO usuarias_inasistencias (usuaria_id, inasistencias) VALUES (?, ?)",
+        (usuaria_id, num_inasistencia,)
+    )
+    conn.commit()
+    conn.close()
+
+def obtener_usuaria_inasistencia(usuaria_id) -> dict | None:
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM usuarias_inasistencias WHERE usuaria_id = ?",
+        (usuaria_id,)
+    )
+
+    resultado = cursor.fetchone()
+    conn.close()
+
+    return {"usuaria_id": dict(resultado).get("usuaria_id"), "direccion_id": dict(resultado).get("direccion_id")} if resultado else None
+
+def actualizar_usuaria_inasistencia(usuaria_id, num_inasistencia) -> int:
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE usuarias_inasistencias
+        SET inasistencias = ?
+        WHERE usuaria_id = ?
+    """, (usuaria_id, num_inasistencia))
+
+    conn.commit()
+    filas = cursor.rowcount
+    conn.close()
+
+    return filas

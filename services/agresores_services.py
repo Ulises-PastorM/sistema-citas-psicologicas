@@ -13,8 +13,6 @@ from repositories.agresores_repository import (
 )
 
 
-# ─── CRUD Agresor ─────────────────────────────────────────────────────────────
-
 def service_crear_agresor(agresor: Agresor) -> dict:
     if not agresor.nombre_agresor or not agresor.nombre_agresor.strip():
         return {"success": False, "error": "El nombre del agresor es obligatorio."}
