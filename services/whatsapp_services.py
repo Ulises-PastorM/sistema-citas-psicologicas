@@ -11,10 +11,14 @@ WHATSAPP_SERVER_URL = "http://localhost:3000"
 def obtener_estado_servidor() -> dict:
     """Verifica si el servidor WhatsApp está conectado."""
     try:
-        response = requests.get(f"{WHATSAPP_SERVER_URL}/status", timeout=5)
+        response = requests.get(f"{WHATSAPP_SERVER_URL}/status", timeout=10)
         return response.json()
     except requests.exceptions.ConnectionError:
         return {"status": "error", "detail": "No se pudo conectar al servidor WhatsApp."}
+    except requests.exceptions.ReadTimeout:
+        return {"status": "error", "detail": "El servidor no respondió a tiempo."}
+    except requests.exceptions.RequestException as e:
+        return {"status": "error", "detail": str(e)}
 
 def fecha_a_texto(fecha_str: str) -> str:
     meses = [

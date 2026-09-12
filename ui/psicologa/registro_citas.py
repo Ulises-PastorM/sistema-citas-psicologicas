@@ -1,18 +1,28 @@
 import customtkinter as ctk
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from tkinter import messagebox
 from services.citas_services import service_obtener_citas_usuarias, service_crear_cita, service_actualizar_cita, service_obtener_cita_por_id
-from services.usuarias_services import service_obtener_usuarias, service_obtener_usuaria_por_telefono, service_obtener_usuaria_por_id
+from services.usuarias_services import (
+    service_obtener_usuarias,
+    service_obtener_usuaria_por_telefono,
+    service_obtener_usuaria_por_id,
+    service_obtener_usuaria_inasistencia,
+    service_crear_usuaria_inasistencia,
+    service_actualizar_usuaria_inasistencia
+)
 from services.whatsapp_services import enviar_mensaje_a_usuaria, obtener_estado_servidor
 from services.notificaciones_services import service_registrar_envio_whatsapp
 from models.cita_model import Cita
 from repositories.catalogos_repository import (
     obtener_estados_cita
 )
+from utils.tarea_inicio_dia import ejecutar_tarea_inicio_dia
 
 class RegistroCitas(ctk.CTkFrame):
     def __init__(self, master, on_actualizar=None):
         super().__init__(master, fg_color="transparent")
+        print("Entra a init...")
+        ejecutar_tarea_inicio_dia()
         self.on_actualizar = on_actualizar
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -119,11 +129,29 @@ class RegistroCitas(ctk.CTkFrame):
             messagebox.showwarning("Fecha inválida", f"La fecha seleccionada ({dia} de {mes} de {anio}) no existe en el calendario.")
             return
         
+        #Verificar que la fecha de la cita no sea anterior al día de hoy
+        hoy = date.today()
+        print(f"Fecha actual:       {hoy}")
+        try:
+            fecha_validacion = date.fromisoformat(fecha_cita)
+        except ValueError:
+            messagebox.showwarning("Fecha inválida", f"La fecha seleccionada ({dia} de {mes} de {anio}) es inválida.")
+            return
+        if fecha_validacion < hoy:
+            messagebox.showwarning("Fecha inválida", f"La fecha seleccionada ({dia} de {mes} de {anio}) es anterior al día de hoy.")
+            return
+        
         hora_cita = f"{hora}:{min}"
 
+        #Verificar inasistencias y avisar si tiene 3 o más
         usuaria_telefono = self.opt_usuaria.get()
         datos_usuaria = usuaria_telefono.split(" - ")
         usuaria_info = service_obtener_usuaria_por_telefono(datos_usuaria[1])
+        usuaria_inasistencias = service_obtener_usuaria_inasistencia(usuaria_info.id_usuaria)
+        if usuaria_inasistencias is not None and usuaria_inasistencias.get("inasistencias") >= 3:
+            confirmacion_i = messagebox.askyesno("Usuaria con inasistencias", f"La usuaria {datos_usuaria[0]} cuenta con 3 o más inasistencias ¿Desea continuar?")
+            if not confirmacion_i:
+                return
 
         nueva_cita = Cita(
             fecha=fecha_cita,
@@ -326,6 +354,20 @@ class RegistroCitas(ctk.CTkFrame):
                     tipo_mensaje = "cita_cancelada"
                 elif nuevo_estado_cita == 4: 
                     tipo_mensaje = "no_asistio"
+                    usuaria_info = service_obtener_usuaria_por_id(cita_actual.usuaria_id)
+                    usuaria_inasistencias = service_obtener_usuaria_inasistencia(usuaria_info.id_usuaria)
+                    #No tiene inasistencias
+                    if usuaria_inasistencias is None:
+                        #Crear registro
+                        res_actualizar_inasistencias = service_crear_usuaria_inasistencia(usuaria_info.id_usuaria, 1)
+                    #Sumar una inasistencia
+                    else:
+                        nuevo_inasistencias = usuaria_inasistencias['inasistencias'] + 1
+                        res_actualizar_inasistencias = service_actualizar_usuaria_inasistencia(usuaria_info.id_usuaria, nuevo_inasistencias)
+                    if res_actualizar_inasistencias["success"]:
+                        messagebox.showinfo("Inasistencia", f"Se ha sumado una inasistencia a la usuaria {nombre}.")
+                    else:
+                        messagebox.showerror("Error", "Ha ocurrido un error: " + res_actualizar_inasistencias["error"])
                 
                 res_actualizar_cita = service_actualizar_cita(cita_modificada)
                 if res_actualizar_cita["success"]:

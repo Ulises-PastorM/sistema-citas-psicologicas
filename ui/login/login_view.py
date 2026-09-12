@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
 from services.usuarios_sistema_services import service_login
+from utils.resource_path import resource_path
 
 class LoginView(ctk.CTkFrame):
     def __init__(self, master, comando_login):
@@ -12,7 +13,7 @@ class LoginView(ctk.CTkFrame):
         self.card.pack_propagate(False)
 
         try:
-            img_logo = ctk.CTkImage(light_image=Image.open("assets/logo.png"), size=(200, 70))
+            img_logo = ctk.CTkImage(light_image=Image.open(resource_path("assets/logo.png")), size=(200, 70))
             lbl_logo = ctk.CTkLabel(self.card, image=img_logo, text="")
         except FileNotFoundError:
             lbl_logo = ctk.CTkLabel(self.card, text="[ IMAGEN LOGO ]", font=("Arial", 21, "bold"), text_color="#7A1B6C")
@@ -36,7 +37,7 @@ class LoginView(ctk.CTkFrame):
         frame_user.pack_propagate(False) 
         
         try:
-            ic_user = ctk.CTkImage(light_image=Image.open("assets/ic_user.png"), size=(20, 20))
+            ic_user = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_user.png")), size=(20, 20))
             ctk.CTkLabel(frame_user, image=ic_user, text="").pack(side="left", padx=(15, 5))
         except FileNotFoundError:
             ctk.CTkLabel(frame_user, text="👤", text_color="gray").pack(side="left", padx=(15, 5))
@@ -49,7 +50,7 @@ class LoginView(ctk.CTkFrame):
         frame_pwd.pack_propagate(False)
         
         try:
-            ic_lock = ctk.CTkImage(light_image=Image.open("assets/ic_lock.png"), size=(20, 20))
+            ic_lock = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_lock.png")), size=(20, 20))
             ctk.CTkLabel(frame_pwd, image=ic_lock, text="").pack(side="left", padx=(15, 5))
         except FileNotFoundError:
             ctk.CTkLabel(frame_pwd, text="🔒", text_color="gray").pack(side="left", padx=(15, 5))
@@ -66,7 +67,7 @@ class LoginView(ctk.CTkFrame):
         #ctk.CTkLabel(self.card, text="¿Olvidaste tu contraseña?", font=("Arial", 12, "bold", "italic"), text_color="#7A1B6C", cursor="hand2").pack(pady=(5, 0))
 
         try:
-            img_wave = ctk.CTkImage(light_image=Image.open("assets/banner_buttom.png"), size=(450, 80))
+            img_wave = ctk.CTkImage(light_image=Image.open(resource_path("assets/banner_buttom.png")), size=(450, 80))
             lbl_wave = ctk.CTkLabel(self.card, image=img_wave, text="")
             lbl_wave.place(relx=0.5, rely=1.0, anchor="s")
         except FileNotFoundError:

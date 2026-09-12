@@ -2,6 +2,7 @@ from models.cita_model import Cita
 from repositories.citas_repository import (
     crear_cita,
     obtener_citas,
+    obtener_citas_programadas,
     obtener_cita_por_id,
     obtener_citas_por_usuaria,
     obtener_citas_por_psicologa,
@@ -34,6 +35,14 @@ def service_crear_cita(cita: Cita) -> dict:
 def service_obtener_citas() -> list[Cita]:
     try:
         return obtener_citas()
+    except Exception as e:
+        print(f"[citas_service] Error al obtener citas: {e}")
+        return []
+
+
+def service_obtener_citas_programadas() -> list[Cita]:
+    try:
+        return obtener_citas_programadas()
     except Exception as e:
         print(f"[citas_service] Error al obtener citas: {e}")
         return []

@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS usuarias_inasistencias (
 	"inasistencias"	INTEGER NOT NULL,
 	FOREIGN KEY ("usuaria_id")
 		REFERENCES usuarias("id_usuaria")
-)
+);
 
 -- CATÁLOGOS
 

@@ -31,6 +31,7 @@ from services.agresores_services import (
     service_crear_y_vincular_agresor,
     service_obtener_agresor_por_id
 )
+from utils.resource_path import resource_path
 
 class RegistroUsuariaView(ctk.CTkFrame):
     def __init__(self, master, on_actualizar=None):
@@ -137,8 +138,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
         contenedor_botones.grid(row=0, column=0, columnspan=2, pady=180)
         contenedor_botones.grid_columnconfigure((0, 1), weight=1)
         from PIL import Image
-        icono_registro = ctk.CTkImage(light_image=Image.open("assets/add.png"), size=(60, 60))
-        icono_actualizar = ctk.CTkImage(light_image=Image.open("assets/edit.png"), size=(60, 60))
+        icono_registro = ctk.CTkImage(light_image=Image.open(resource_path("assets/add.png")), size=(60, 60))
+        icono_actualizar = ctk.CTkImage(light_image=Image.open(resource_path("assets/edit.png")), size=(60, 60))
 
         btn_registrar = ctk.CTkButton(
             contenedor_botones,
@@ -726,6 +727,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
         
         self.datos_domicilio = None
         self.btn_domicilio.configure(text="📍 Ingresar Domicilio...", text_color="gray", border_color="#D3D3D3", border_width=1)
+        self.datos_agresor = None
         
         self.opt_civil.set("Soltera")
         
@@ -874,7 +876,10 @@ class RegistroUsuariaView(ctk.CTkFrame):
             set_widget_text(self.ent_telefono, usuaria.telefono)
             set_widget_text(self.ent_cuando, usuaria.servicio_immujer_fecha)
             set_widget_text(self.ent_tipo_apoyo, "Psicológico")
-            self.padecimientos_seleccionados = usuaria.padecimiento.split(", ")
+            if usuaria.padecimiento != "":
+                self.padecimientos_seleccionados = usuaria.padecimiento.split(", ")
+            else:
+                self.padecimientos_seleccionados = []
             num_seleccionados = len(self.padecimientos_seleccionados)
             if num_seleccionados > 0:
                 self.btn_padecimiento.configure(text=f" ✅ {num_seleccionados} seleccionados", text_color="black", border_color="#32CD32", border_width=2)

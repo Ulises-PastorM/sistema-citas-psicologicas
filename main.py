@@ -1,4 +1,5 @@
 import sys
+import threading
 import subprocess
 from pathlib import Path
 import shutil
@@ -50,6 +51,9 @@ def iniciar_servidor_whatsapp() -> subprocess.Popen | None:
             bufsize=1,
         )
         print(f"[WhatsApp] Servidor iniciado (PID: {proceso.pid})")
+        # Leer el pipe en un hilo daemon para no bloquear Node.js
+        hilo = threading.Thread(target=_leer_salida, args=(proceso,), daemon=True)
+        hilo.start()
         return proceso
     except FileNotFoundError:
         print("[WhatsApp] Error: npm no encontrado. Asegúrate de que Node.js esté instalado.")
@@ -75,6 +79,17 @@ def detener_servidor_whatsapp(proceso: subprocess.Popen) -> None:
                 proceso.kill()
                 print("[WhatsApp] Servidor forzosamente terminado.")
 
+def _leer_salida(proceso: subprocess.Popen) -> None:
+    """
+    Lee el stdout del proceso Node.js en un hilo separado.
+    Evita que el buffer de PIPE se llene y bloquee el servidor.
+    """
+    try:
+        for linea in proceso.stdout:
+            print(f"[WhatsApp] {linea}", end="")
+    except (ValueError, OSError):
+        # El pipe se cerró al terminar el proceso — es normal
+        pass
 
 # Entry point
 if __name__ == "__main__":

@@ -13,3 +13,6 @@
 /database/immujer.db
 venv/
 /runtime
+/build
+/dist
+/utils/__pycache__

@@ -257,7 +257,7 @@ def obtener_usuaria_inasistencia(usuaria_id) -> dict | None:
     resultado = cursor.fetchone()
     conn.close()
 
-    return {"usuaria_id": dict(resultado).get("usuaria_id"), "direccion_id": dict(resultado).get("direccion_id")} if resultado else None
+    return {"usuaria_id": dict(resultado).get("usuaria_id"), "inasistencias": dict(resultado).get("inasistencias")} if resultado else None
 
 def actualizar_usuaria_inasistencia(usuaria_id, num_inasistencia) -> int:
     conn = get_connection()
@@ -268,7 +268,7 @@ def actualizar_usuaria_inasistencia(usuaria_id, num_inasistencia) -> int:
         UPDATE usuarias_inasistencias
         SET inasistencias = ?
         WHERE usuaria_id = ?
-    """, (usuaria_id, num_inasistencia))
+    """, (num_inasistencia, usuaria_id))
 
     conn.commit()
     filas = cursor.rowcount

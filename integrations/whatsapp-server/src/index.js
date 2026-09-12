@@ -5,8 +5,17 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const qrcodeTerminal = require('qrcode-terminal');
 const { execSync } = require('child_process');
+const path = require('path');
 
 const PORT = process.env.PORT || 3000;
+
+console.log('[WhatsApp] process.cwd():', process.cwd());
+console.log('[WhatsApp] __dirname:', __dirname);
+console.log('[WhatsApp] Node:', process.execPath);
+
+const SESSION_PATH = path.resolve('./sessions');
+console.log('[WhatsApp] SESSION_PATH:', SESSION_PATH);
+
 const app  = express();
 app.use(express.json());
 
@@ -23,7 +32,9 @@ let chromePID = null;
 const MAX_INTENTOS = 5;
 
 const CLIENT_OPTS = {
-  authStrategy: new LocalAuth({ dataPath: './sessions' }),
+  authStrategy: new LocalAuth({
+    dataPath: SESSION_PATH
+  }),
   puppeteer: {
     headless: true,
     args: [

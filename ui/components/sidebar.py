@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
+from utils.resource_path import resource_path
 class Sidebar(ctk.CTkFrame):
     def __init__(self, master, comando_navegacion=None):
         super().__init__(master, width=250, corner_radius=0, fg_color="#F2F2F2")
@@ -7,9 +8,9 @@ class Sidebar(ctk.CTkFrame):
         self.comando_navegacion = comando_navegacion
         self.vista_actual = None 
 
-        ruta_logo = "assets/logo.png" 
+        ruta_logo = resource_path("assets/logo.png")
         try:
-            imagen_logo = ctk.CTkImage(light_image=Image.open(ruta_logo), size=(200, 70))
+            imagen_logo = ctk.CTkImage(light_image=Image.open(resource_path(ruta_logo)), size=(200, 70))
             self.lbl_logo = ctk.CTkLabel(self, image=imagen_logo, text="")
         except FileNotFoundError:
             self.lbl_logo = ctk.CTkLabel(self, text="[ IMAGEN LOGO ]", font=("Arial", 17, "bold"), text_color="#7A1B6C")
@@ -18,15 +19,15 @@ class Sidebar(ctk.CTkFrame):
         self.iconos_n = {}
         self.iconos_b = {}
         try:
-            self.iconos_n["registro"] = ctk.CTkImage(light_image=Image.open("assets/ic_citas_negro.png"), size=(20, 20))
-            self.iconos_n["usuaria"] = ctk.CTkImage(light_image=Image.open("assets/ic_citas_negro.png"), size=(20, 20))
-            self.iconos_n["calendario"] = ctk.CTkImage(light_image=Image.open("assets/ic_calendario_negro.png"), size=(20, 20))
-            self.iconos_n["observaciones"] = ctk.CTkImage(light_image=Image.open("assets/ic_observaciones_negro.png"), size=(20, 20))
+            self.iconos_n["registro"] = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_citas_negro.png")), size=(20, 20))
+            self.iconos_n["usuaria"] = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_citas_negro.png")), size=(20, 20))
+            self.iconos_n["calendario"] = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_calendario_negro.png")), size=(20, 20))
+            self.iconos_n["observaciones"] = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_observaciones_negro.png")), size=(20, 20))
 
-            self.iconos_b["registro"] = ctk.CTkImage(light_image=Image.open("assets/ic_citas_blanco.png"), size=(20, 20))
-            self.iconos_b["usuaria"] = ctk.CTkImage(light_image=Image.open("assets/ic_citas_blanco.png"), size=(20, 20))
-            self.iconos_b["calendario"] = ctk.CTkImage(light_image=Image.open("assets/ic_calendario_blanco.png"), size=(20, 20))
-            self.iconos_b["observaciones"] = ctk.CTkImage(light_image=Image.open("assets/ic_observaciones_blanco.png"), size=(20, 20))
+            self.iconos_b["registro"] = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_citas_blanco.png")), size=(20, 20))
+            self.iconos_b["usuaria"] = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_citas_blanco.png")), size=(20, 20))
+            self.iconos_b["calendario"] = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_calendario_blanco.png")), size=(20, 20))
+            self.iconos_b["observaciones"] = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_observaciones_blanco.png")), size=(20, 20))
 
         except FileNotFoundError:
             for k in ["registro","usuaria", "calendario", "observaciones"]:
@@ -64,7 +65,7 @@ class Sidebar(ctk.CTkFrame):
         self.separador = ctk.CTkFrame(self, height=1, fg_color="#D3D3D3")
         self.separador.grid(row=6, column=0, padx=20, pady=(0, 15), sticky="ew")
 
-        icono_cuenta = ctk.CTkImage(light_image=Image.open("assets/ic_userP.png"), size=(20, 20))
+        icono_cuenta = ctk.CTkImage(light_image=Image.open(resource_path("assets/ic_userP.png")), size=(20, 20))
 
         self.btn_cuenta = ctk.CTkButton(
             self,

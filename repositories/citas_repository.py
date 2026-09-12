@@ -33,6 +33,19 @@ def obtener_citas() -> list[Cita]:
     return [Cita.from_dict(dict(row)) for row in resultados]
 
 
+def obtener_citas_programadas() -> list[Cita]:
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM citas WHERE estado_id = 1 ORDER BY fecha ASC, hora ASC")
+
+    resultados = cursor.fetchall()
+    conn.close()
+
+    return [Cita.from_dict(dict(row)) for row in resultados]
+
+
 def obtener_cita_por_id(id_cita: int) -> Cita | None:
     conn = get_connection()
     enable_foreign_keys(conn)

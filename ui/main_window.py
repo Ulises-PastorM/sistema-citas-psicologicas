@@ -8,6 +8,7 @@ from ui.psicologa.registro_usuaria import RegistroUsuariaView
 from ui.login.login_view import LoginView 
 from ui.psicologa.observaciones import ObservacionesView 
 from ui.psicologa.mi_cuenta import MiCuentaView
+from utils.resource_path import resource_path
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -32,7 +33,7 @@ class MainWindow(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)
 
         try:
-            self.img_pil_banner = Image.open("assets/banner_top.png")
+            self.img_pil_banner = Image.open(resource_path("assets/banner_top.png"))
             self.img_banner = ctk.CTkImage(light_image=self.img_pil_banner, size=(1300, 20))
             
             self.lbl_banner = ctk.CTkLabel(self, image=self.img_banner, text="")
