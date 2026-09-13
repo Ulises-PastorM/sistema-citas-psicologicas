@@ -69,7 +69,7 @@ class ObservacionesView(ctk.CTkFrame):
 
         for fila in datos_ejemplo:
             if fila[4] in ("Programada", "Atendida"):
-                nombre_usuaria = fila[0]
+                telefono_usuaria = fila[2]
                 fecha_str = fila[1]
                 hora_str = fila[3] # Extraemos la hora (basado en tu función crear_tarjeta_sesion)
                 
@@ -84,13 +84,13 @@ class ObservacionesView(ctk.CTkFrame):
                     fecha_cita = datetime.strptime(fecha_str, "%Y-%m-%d")
                 
                 # Comparamos
-                if nombre_usuaria not in citas_mas_recientes:
-                    citas_mas_recientes[nombre_usuaria] = (fila, fecha_cita)
+                if telefono_usuaria not in citas_mas_recientes:
+                    citas_mas_recientes[telefono_usuaria] = (fila, fecha_cita)
                 else:
-                    fecha_guardada = citas_mas_recientes[nombre_usuaria][1]
+                    fecha_guardada = citas_mas_recientes[telefono_usuaria][1]
                     # Al incluir la hora, la cita más tarde ese mismo día sí será mayor (>)
                     if fecha_cita > fecha_guardada:
-                        citas_mas_recientes[nombre_usuaria] = (fila, fecha_cita)
+                        citas_mas_recientes[telefono_usuaria] = (fila, fecha_cita)
 
         lista_ordenada = sorted(
             citas_mas_recientes.values(),
@@ -124,9 +124,10 @@ class ObservacionesView(ctk.CTkFrame):
             
     def abrir_modal(self, fila):
         nombre_usuaria = fila[0]
+        telefono_usuaria = fila[2]
         
         todas_las_citas = service_obtener_citas_usuarias()
-        citas_usuaria = [c for c in todas_las_citas if c[0] == nombre_usuaria and c[4] in ("Programada", "Atendida")]
+        citas_usuaria = [c for c in todas_las_citas if c[2] == telefono_usuaria and c[4] in ("Programada", "Atendida")]
         
         citas_usuaria.sort(key=lambda x: datetime.strptime(x[1], "%Y-%m-%d"), reverse=True)
 
