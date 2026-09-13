@@ -71,20 +71,33 @@ class ObservacionesView(ctk.CTkFrame):
             if fila[4] in ("Programada", "Atendida"):
                 nombre_usuaria = fila[0]
                 fecha_str = fila[1]
+                hora_str = fila[3] # Extraemos la hora (basado en tu función crear_tarjeta_sesion)
                 
-                # Transformamos la fecha a formato de tiempo para poder compararla matemáticamente
-                fecha_cita = datetime.strptime(fecha_str, "%Y-%m-%d")
+                # Transformamos la fecha Y LA HORA a formato de tiempo para compararla con exactitud
+                fecha_hora_str = f"{fecha_str} {hora_str}"
                 
-                # Si la usuaria no está en el registro, o si esta cita tiene una fecha mayor (es más nueva)
+                try:
+                    # Ajusta "%H:%M" o "%H:%M:%S" dependiendo de cómo guardes la hora en tu base de datos
+                    fecha_cita = datetime.strptime(fecha_hora_str, "%Y-%m-%d %H:%M")
+                except ValueError:
+                    # Fallback por si alguna cita no tiene hora válida
+                    fecha_cita = datetime.strptime(fecha_str, "%Y-%m-%d")
+                
+                # Comparamos
                 if nombre_usuaria not in citas_mas_recientes:
                     citas_mas_recientes[nombre_usuaria] = (fila, fecha_cita)
                 else:
                     fecha_guardada = citas_mas_recientes[nombre_usuaria][1]
+                    # Al incluir la hora, la cita más tarde ese mismo día sí será mayor (>)
                     if fecha_cita > fecha_guardada:
                         citas_mas_recientes[nombre_usuaria] = (fila, fecha_cita)
 
+        lista_ordenada = sorted(
+            citas_mas_recientes.values(),
+            key=lambda data: 0 if data[0][4] == "Programada" else 1
+        )
         # Dibujamos la tabla utilizando únicamente los datos ya filtrados por fecha reciente
-        for data in citas_mas_recientes.values():
+        for data in lista_ordenada:
             fila_reciente = data[0]
             
             row_frame = ctk.CTkFrame(self.scroll_tabla, fg_color="white", border_width=1, border_color="#E0E0E0", corner_radius=6, height=40)

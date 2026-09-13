@@ -151,8 +151,17 @@ class CalendarioView(ctk.CTkFrame):
             color_borde = "white"
 
             if fecha_actual_loop in self.db_citas:
-                color_fondo = self.db_citas[fecha_actual_loop][0]["color"]
+                citas_del_dia = self.db_citas[fecha_actual_loop]
+                
+                # Por defecto, asignamos el color de la primera cita
+                color_fondo = citas_del_dia[0]["color"]
                 color_texto = "white"
+                
+                # Revisamos todas las citas del día buscando una "Programada"
+                for cita in citas_del_dia:
+                    if cita["estatus"] == "Programada":
+                        color_fondo = cita["color"]
+                        break  # Al encontrar la primera programada, detenemos la búsqueda
 
             if fecha_actual_loop == self.fecha_seleccionada:
                 if color_fondo == "transparent":
