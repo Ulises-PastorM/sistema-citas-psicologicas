@@ -8,6 +8,7 @@ from ui.psicologa.registro_usuaria import RegistroUsuariaView
 from ui.login.login_view import LoginView 
 from ui.psicologa.observaciones import ObservacionesView 
 from ui.psicologa.mi_cuenta import MiCuentaView
+import ctypes
 from utils.resource_path import resource_path
 
 class MainWindow(ctk.CTk):
@@ -18,9 +19,20 @@ class MainWindow(ctk.CTk):
         self.geometry("1300x750")
         self.minsize(1300, 750)
         ctk.set_appearance_mode("light")
-
+        self.configure(fg_color="#FDFBFB")
+        self.after(10, self.bloquear_arrastre_bordes)
         self.mostrar_login()
 
+    def bloquear_arrastre_bordes(self):
+        try:
+            hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+            GWL_STYLE = -16
+            WS_THICKFRAME = 0x00040000 
+            style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_STYLE)
+            ctypes.windll.user32.SetWindowLongW(hwnd, GWL_STYLE, style & ~WS_THICKFRAME)
+        except Exception as e:
+            print("No se pudo aplicar el bloqueo de bordes de Windows:", e)
+            
     def mostrar_login(self):
         self.login_view = LoginView(self, comando_login=self.iniciar_aplicacion)
         self.login_view.pack(fill="both", expand=True)
@@ -30,6 +42,7 @@ class MainWindow(ctk.CTk):
 
         self.grid_rowconfigure(0, weight=0) 
         self.grid_rowconfigure(1, weight=1) 
+        self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1)
 
         try:

@@ -20,7 +20,7 @@ from utils.tarea_inicio_dia import ejecutar_tarea_inicio_dia
 
 class RegistroCitas(ctk.CTkFrame):
     def __init__(self, master, on_actualizar=None):
-        super().__init__(master, fg_color="transparent")
+        super().__init__(master, fg_color="#F4F4F4")
         print("Entra a init...")
         ejecutar_tarea_inicio_dia()
         self.on_actualizar = on_actualizar
@@ -45,10 +45,10 @@ class RegistroCitas(ctk.CTkFrame):
         self.estados_cita_list = None
         columnas = ["Nombre", "Fecha", "Telefono", "Hora", "Estatus", "Editar"]
         for i, col in enumerate(columnas):
-            lbl = ctk.CTkLabel(self.tabla_header, text=col, text_color="white", font=("Arial", 14, "bold"), anchor="center")
+            lbl = ctk.CTkLabel(self.tabla_header, text=col, text_color="white", font=("Arial", 14, "bold"), anchor="center", fg_color="#7A1B6C")
             lbl.grid(row=0, column=i, pady=10, sticky="ew")
 
-        self.scroll_tabla = ctk.CTkScrollableFrame(self.card_frame, fg_color="transparent", height=160)
+        self.scroll_tabla = ctk.CTkScrollableFrame(self.card_frame, fg_color="#F4F4F4", height=160)
         self.scroll_tabla.grid(row=2, column=0, columnspan=2, padx=15, pady=(0, 10), sticky="ew")
 
         self.cargar_catalogos()
@@ -71,7 +71,7 @@ class RegistroCitas(ctk.CTkFrame):
 
         ctk.CTkLabel(self.card_frame, text="Fecha 📅:", **lbl_kwargs).grid(row=4, column=1, padx=(10, 20), pady=(10, 0), sticky="w")
         
-        self.frame_fecha = ctk.CTkFrame(self.card_frame, fg_color="transparent")
+        self.frame_fecha = ctk.CTkFrame(self.card_frame, fg_color="#F4F4F4")
         self.frame_fecha.grid(row=5, column=1, padx=(10, 20), pady=(2, 10), sticky="w")
 
         self.opt_dia = ctk.CTkOptionMenu(self.frame_fecha, values=[str(i).zfill(2) for i in range(1, 32)], width=75, **opt_kwargs)
@@ -88,7 +88,7 @@ class RegistroCitas(ctk.CTkFrame):
 
         ctk.CTkLabel(self.card_frame, text="Horario 🕒:", **lbl_kwargs).grid(row=6, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
         
-        self.frame_horario = ctk.CTkFrame(self.card_frame, fg_color="transparent")
+        self.frame_horario = ctk.CTkFrame(self.card_frame, fg_color="#F4F4F4")
         self.frame_horario.grid(row=7, column=0, padx=(20, 10), pady=(2, 10), sticky="w")
 
         self.opt_hora = ctk.CTkOptionMenu(self.frame_horario, values=[str(i).zfill(2) for i in range(8, 17)], width=85, **opt_kwargs)
@@ -456,7 +456,7 @@ class RegistroCitas(ctk.CTkFrame):
                     if i == 0 and len(texto_celda) > 18: 
                         texto_celda = texto_celda[:15] + "..."
                         
-                    lbl_dato = ctk.CTkLabel(row_frame, text=texto_celda, text_color=color_texto, font=("Arial", 13), anchor="center")
+                    lbl_dato = ctk.CTkLabel(row_frame, text=texto_celda, text_color=color_texto, font=("Arial", 13), anchor="center", fg_color="white")
                     lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
                 
                 btn_editar = ctk.CTkButton(row_frame, text="Editar ✏️", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, 

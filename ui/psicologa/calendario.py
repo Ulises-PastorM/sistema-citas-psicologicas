@@ -137,7 +137,7 @@ class CalendarioView(ctk.CTkFrame):
             rf.grid(row=r, column=0, columnspan=7, sticky="nsew", pady=2, padx=5)
             
             for i in range(7):
-                rf.grid_columnconfigure(i, weight=1)
+                rf.grid_columnconfigure(i, weight=1, uniform="dia")
                 
             row_frames[r] = rf
 

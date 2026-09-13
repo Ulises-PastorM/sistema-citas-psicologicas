@@ -8,7 +8,7 @@ class Sidebar(ctk.CTkFrame):
         self.comando_navegacion = comando_navegacion
         self.vista_actual = None 
 
-        ruta_logo = resource_path("assets/logo.png")
+        ruta_logo = resource_path("assets/logo1.jpeg")
         try:
             imagen_logo = ctk.CTkImage(light_image=Image.open(resource_path(ruta_logo)), size=(200, 70))
             self.lbl_logo = ctk.CTkLabel(self, image=imagen_logo, text="")

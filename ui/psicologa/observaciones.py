@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from datetime import datetime
+from tkinter import messagebox
 from services.citas_services import service_obtener_citas_usuarias
 from models.sesion_model import Sesion
 from services.sesiones_services import (
@@ -7,9 +8,10 @@ from services.sesiones_services import (
     service_crear_sesion,
     service_actualizar_sesion
 )
+
 class ObservacionesView(ctk.CTkFrame):
     def __init__(self, master):
-        super().__init__(master, fg_color="transparent")
+        super().__init__(master, fg_color="#FDFBFB")
         
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
@@ -84,21 +86,22 @@ class ObservacionesView(ctk.CTkFrame):
             
     def abrir_modal(self, fila):
         nombre_usuaria = fila[0]
-        fecha_cita = fila[1]
-        cita_id = fila[5] 
-        sesiones_existentes = service_obtener_sesiones_por_cita(cita_id)
-        sesion_actual = sesiones_existentes[0] if sesiones_existentes else None
+        
+        todas_las_citas = service_obtener_citas_usuarias()
+        citas_usuaria = [c for c in todas_las_citas if c[0] == nombre_usuaria and c[4] in ("Programada", "Atendida")]
+        
+        citas_usuaria.sort(key=lambda x: datetime.strptime(x[1], "%Y-%m-%d"), reverse=True)
 
         modal = ctk.CTkToplevel(self)
-        modal.geometry("450x300")
+        modal.geometry("500x450")
         
         modal.overrideredirect(True) 
         modal.attributes("-topmost", True)
         modal.configure(fg_color="#D3D3D3") 
         
         modal.update_idletasks()
-        x = self.winfo_rootx() + (self.winfo_width() // 2) - (450 // 2)
-        y = self.winfo_rooty() + (self.winfo_height() // 2) - (300 // 2)
+        x = self.winfo_rootx() + (self.winfo_width() // 2) - (600 // 2)
+        y = self.winfo_rooty() + (self.winfo_height() // 2) - (550 // 2)
         modal.geometry(f"+{x}+{y}")
 
         container = ctk.CTkFrame(modal, fg_color="white", corner_radius=10, border_width=1, border_color="#A0A0A0")
@@ -108,7 +111,7 @@ class ObservacionesView(ctk.CTkFrame):
         header.pack(fill="x", padx=1, pady=1)
         header.pack_propagate(False)
 
-        lbl_modal_title = ctk.CTkLabel(header, text="Observaciones", font=("Arial", 17, "bold", "italic"), text_color="white")
+        lbl_modal_title = ctk.CTkLabel(header, text="Historial de Sesiones", font=("Arial", 17, "bold", "italic"), text_color="white")
         lbl_modal_title.pack(side="left", padx=15)
 
         btn_close = ctk.CTkButton(header, text="X", font=("Arial", 19, "bold"), text_color="white", fg_color="transparent", hover_color="#E55A2B", width=30, command=modal.destroy)
@@ -117,37 +120,86 @@ class ObservacionesView(ctk.CTkFrame):
         content = ctk.CTkFrame(container, fg_color="transparent")
         content.pack(fill="both", expand=True, padx=25, pady=15)
 
-        ctk.CTkLabel(content, text=nombre_usuaria, font=("Arial", 17, "bold", "italic"), text_color="black").pack(anchor="w")
-        ctk.CTkLabel(content, text="Observaciones de la sesión", font=("Arial", 12, "bold", "italic"), text_color="black").pack(anchor="w", pady=(0, 5))
+        ctk.CTkLabel(content, text=nombre_usuaria, font=("Arial", 19, "bold", "italic"), text_color="#7A1B6C").pack(anchor="w")
+        ctk.CTkLabel(content, text="Seleccione una sesión para agregar o visualizar la observación.", font=("Arial", 13, "italic"), text_color="gray").pack(anchor="w", pady=(0, 15))
 
-        self.txt_obs = ctk.CTkTextbox(content, fg_color="white", text_color="black", border_width=1, border_color="#D3D3D3", height=100)
-        self.txt_obs.pack(fill="x", pady=(0, 15))
+        self.scroll_sesiones = ctk.CTkScrollableFrame(content, fg_color="transparent")
+        self.scroll_sesiones.pack(fill="both", expand=True)
 
-        if sesion_actual and sesion_actual.observaciones:
-            self.txt_obs.insert("0.0", sesion_actual.observaciones)
+        for cita in citas_usuaria:
+            self.crear_tarjeta_sesion(self.scroll_sesiones, cita, modal)
 
-        footer_frame = ctk.CTkFrame(content, fg_color="transparent")
-        footer_frame.pack(fill="x", pady=(5, 0))
+    def crear_tarjeta_sesion(self, parent, cita, modal):
+        cita_id = cita[5]
+        fecha_cita = cita[1]
+        hora = cita[3]
 
-        lbl_mensaje = ctk.CTkLabel(footer_frame, text="", font=("Arial", 13, "bold"))
-        lbl_mensaje.pack(side="left")
+        sesiones_existentes = service_obtener_sesiones_por_cita(cita_id)
+        sesion_actual = sesiones_existentes[0] if sesiones_existentes else None
+        tiene_observacion = sesion_actual is not None and bool(sesion_actual.observaciones)
 
-        def guardar_observaciones():
-            texto_observaciones = self.txt_obs.get("0.0", "end").strip()
+        tarjeta = ctk.CTkFrame(parent, fg_color="#F9F9F9", corner_radius=8, border_width=1, border_color="#D3D3D3")
+        tarjeta.pack(fill="x", pady=6, padx=5)
+
+        header_tarjeta = ctk.CTkFrame(tarjeta, fg_color="transparent")
+        header_tarjeta.pack(fill="x", padx=15, pady=10)
+
+        fecha_texto = self.fecha_a_texto(fecha_cita)
+        lbl_info = ctk.CTkLabel(header_tarjeta, text=f"📅 {fecha_texto}   🕒 {hora}", font=("Arial", 14, "bold"), text_color="#333333")
+        lbl_info.pack(side="left")
+
+        texto_boton = "Ver observación" if tiene_observacion else "Editar observación"
+        color_boton = "#006B4D" if tiene_observacion else "#7A1B6C"
+        hover_boton = "#004E38" if tiene_observacion else "#5A134F"
+
+        expand_frame = ctk.CTkFrame(tarjeta, fg_color="transparent")
+        is_expanded = {"value": False}
+
+        def toggle_expand():
+            if is_expanded["value"]:
+                expand_frame.pack_forget()
+                is_expanded["value"] = False
+            else:
+                expand_frame.pack(fill="x", padx=15, pady=(0, 10))
+                is_expanded["value"] = True
+
+        btn_accion = ctk.CTkButton(header_tarjeta, text=texto_boton, fg_color=color_boton, hover_color=hover_boton, width=130, height=28, font=("Arial", 12, "bold"), command=toggle_expand)
+        btn_accion.pack(side="right")
+
+        txt_obs = ctk.CTkTextbox(expand_frame, height=90, fg_color="white", text_color="black", border_width=1, border_color="#B0B0B0", font=("Arial", 13))
+        txt_obs.pack(fill="x", pady=5)
+
+        if tiene_observacion:
+            txt_obs.insert("0.0", sesion_actual.observaciones)
+            txt_obs.configure(state="disabled", fg_color="#EBEBEB")
+        else:
+            btn_guardar = ctk.CTkButton(expand_frame, text="Confirmar y Guardar", fg_color="#FF6B35", hover_color="#E55A2B", text_color="white", font=("Arial", 13, "bold"), command=lambda: self.guardar_obs(txt_obs, cita_id, fecha_cita, btn_accion, btn_guardar, sesion_actual, modal))
+            btn_guardar.pack(side="right", pady=5)
             
+    def guardar_obs(self, textbox, id_c, fecha, btn_acc, btn_g, sesion_actual, modal):
+        obs = textbox.get("0.0", "end").strip()
+        if not obs:
+            messagebox.showwarning("Atención", "La observación no puede estar vacía.", parent=modal) 
+            return
+            
+        confirmacion = messagebox.askyesno(
+            "Confirmación", 
+            "Una vez guardada la observación, ésta pasará a modo de solo lectura y no podrá ser editada de nuevo.\n\n¿Desea guardar la información permanentemente?",
+            parent=modal
+        )
+        
+        if confirmacion:
             if sesion_actual:
-                sesion_actual.observaciones = texto_observaciones
-                resultado = service_actualizar_sesion(sesion_actual)
+                sesion_actual.observaciones = obs
+                res = service_actualizar_sesion(sesion_actual)
             else:
-                nueva_sesion = Sesion(cita_id=cita_id, fecha_sesion=fecha_cita, observaciones=texto_observaciones)
-                resultado = service_crear_sesion(nueva_sesion)
-
-            if resultado.get("success"):
-                lbl_mensaje.configure(text="✅ Datos guardados", text_color="#32CD32")
-                btn_guardar.configure(state="disabled")
-                self.after(1500, modal.destroy)
+                nueva_sesion = Sesion(cita_id=id_c, fecha_sesion=fecha, observaciones=obs)
+                res = service_crear_sesion(nueva_sesion)
+                
+            if res.get("success"):
+                messagebox.showinfo("Éxito", "Observación guardada correctamente.", parent=modal)
+                textbox.configure(state="disabled", fg_color="#EBEBEB")
+                btn_g.pack_forget()  # Oculta el botón de guardar
+                btn_acc.configure(text="Ver observación", fg_color="#006B4D", hover_color="#004E38") 
             else:
-                lbl_mensaje.configure(text=f"Error: {resultado.get('error')}", text_color="red")
-
-        btn_guardar = ctk.CTkButton(footer_frame, text="Guardar", fg_color="#005A43", hover_color="#004030", text_color="white", font=("Arial", 15, "bold", "italic"), corner_radius=8, height=35, command=guardar_observaciones)
-        btn_guardar.pack(side="right")
+                messagebox.showerror("Error", f"No se pudo guardar la información: {res.get('error')}", parent=modal)
