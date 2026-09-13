@@ -133,6 +133,8 @@ CREATE TABLE IF NOT EXISTS usuarias (
 	"red_apoyo"					TEXT,
 	"motivo_consulta"			TEXT,
 	"estatus_id"				INTEGER,
+	"familia_mujeres"			TEXT,
+	"familia_hombres"			TEXT,
 	PRIMARY KEY("id_usuaria" AUTOINCREMENT),
 	FOREIGN KEY ("escolaridad_id")
 		REFERENCES escolaridades("id_escolaridad"),

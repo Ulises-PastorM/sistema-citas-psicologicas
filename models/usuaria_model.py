@@ -22,6 +22,8 @@ class Usuaria:
     canalizada_por:         str
     red_apoyo:              str
     motivo_consulta:        str
+    familia_mujeres:        str
+    familia_hombres:        str
     estatus_id:             int
     id_usuaria:             Optional[int] = field(default=None)  # None al crear, asignado por la BD
 
@@ -53,7 +55,9 @@ class Usuaria:
             "canalizada_por":   	    self.canalizada_por,
             "red_apoyo":    		    self.red_apoyo,
             "motivo_consulta":  	    self.motivo_consulta,
-            "estatus_id":   		    self.estatus_id,
+            "familia_mujeres":          self.familia_mujeres,
+            "familia_hombres":          self.familia_hombres,
+            "estatus_id":   		    self.estatus_id
         }
 
     @staticmethod
@@ -79,7 +83,9 @@ class Usuaria:
             canalizada_por          = data.get("canalizada_por", ""),
             red_apoyo               = data.get("red_apoyo", ""),
             motivo_consulta         = data.get("motivo_consulta", ""),
-            estatus_id              = data.get("estatus_id", 0),
+            familia_mujeres         = data.get("familia_mujeres", ""),
+            familia_hombres         = data.get("familia_hombres", ""),
+            estatus_id              = data.get("estatus_id", 0)
         )
 
     def __str__(self) -> str:

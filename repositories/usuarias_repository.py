@@ -26,11 +26,14 @@ def crear_usuaria(usuaria: Usuaria) -> int:
             canalizada_por,
             red_apoyo,
             motivo_consulta,
+            familia_mujeres,
+            familia_hombres,
             estatus_id
         )
         VALUES (
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?
         )
     """, (
         usuaria.nombre,
@@ -51,6 +54,8 @@ def crear_usuaria(usuaria: Usuaria) -> int:
         usuaria.canalizada_por,
         usuaria.red_apoyo,
         usuaria.motivo_consulta,
+        usuaria.familia_mujeres,
+        usuaria.familia_hombres,
         usuaria.estatus_id
     ))
     conn.commit()
@@ -115,6 +120,8 @@ def actualizar_usuaria(usuaria: Usuaria):
             canalizada_por = ?,
             red_apoyo = ?,
             motivo_consulta = ?,
+            familia_mujeres = ?,
+            familia_hombres = ?,
             estatus_id = ?
         WHERE id_usuaria = ?
     """, (
@@ -136,6 +143,8 @@ def actualizar_usuaria(usuaria: Usuaria):
         usuaria.canalizada_por,
         usuaria.red_apoyo,
         usuaria.motivo_consulta,
+        usuaria.familia_mujeres,
+        usuaria.familia_hombres,
         usuaria.estatus_id,
         usuaria.id_usuaria
     ))

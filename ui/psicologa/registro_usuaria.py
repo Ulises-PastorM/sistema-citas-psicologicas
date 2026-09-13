@@ -595,6 +595,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 canalizada_por = self.opt_canalizada.get(),
                 red_apoyo = self.ent_red_apoyo.get(),
                 motivo_consulta = self.txt_motivo.get("0.0", "end").strip(),
+                familia_mujeres = self.ent_mujeres.get(),
+                familia_hombres = self.ent_hombres.get(),
                 estatus_id = 1,
                 id_usuaria = self.id_usuaria_editada if self.editando_usuaria else None 
             )
@@ -744,7 +746,10 @@ class RegistroUsuariaView(ctk.CTkFrame):
         self.var_immujer.set("No")
         self.actualizar_campos_immujer()
         
-        self.opt_canalizada.set("Vicefiscalía")
+        self.opt_canalizada.set("Ninguna")
+
+        self.ent_mujeres.delete(0, "end")
+        self.ent_hombres.delete(0, "end")
         
         self.ent_red_apoyo.delete(0, "end")
         
@@ -875,6 +880,8 @@ class RegistroUsuariaView(ctk.CTkFrame):
             set_widget_text(self.ent_ocupacion, usuaria.ocupacion)
             set_widget_text(self.ent_telefono, usuaria.telefono)
             set_widget_text(self.ent_cuando, usuaria.servicio_immujer_fecha)
+            set_widget_text(self.ent_mujeres, usuaria.familia_mujeres)
+            set_widget_text(self.ent_hombres, usuaria.familia_hombres)
             set_widget_text(self.ent_tipo_apoyo, "Psicológico")
             if usuaria.padecimiento != "":
                 self.padecimientos_seleccionados = usuaria.padecimiento.split(", ")
