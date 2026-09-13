@@ -550,9 +550,20 @@ class RegistroUsuariaView(ctk.CTkFrame):
                 messagebox.showwarning("Faltan datos", "Por favor, ingrese un nombre válido")
                 return
             
-            if self.ent_telefono.get() == "":
+            telefono_ingresado = self.ent_telefono.get()
+            if telefono_ingresado == "":
                 messagebox.showwarning("Faltan datos", "Por favor, ingrese un telefono válido")
                 return
+
+            # NUEVA VALIDACIÓN: Verificar si el teléfono ya está registrado
+            usuaria_existente = service_obtener_usuaria_por_telefono(telefono_ingresado)
+            if usuaria_existente:
+                if not self.editando_usuaria:
+                    messagebox.showerror("Teléfono Duplicado", f"El número {telefono_ingresado} ya se encuentra registrado a nombre de: {usuaria_existente.nombre}.")
+                    return
+                elif self.editando_usuaria and usuaria_existente.id_usuaria != self.id_usuaria_editada:
+                    messagebox.showerror("Teléfono Duplicado", f"No puedes usar el número {telefono_ingresado} porque le pertenece a otra usuaria: {usuaria_existente.nombre}.")
+                    return
             
             dia = self.opt_dia.get()
             mes = self.opt_mes.get()
@@ -579,7 +590,7 @@ class RegistroUsuariaView(ctk.CTkFrame):
             nueva_usuaria = Usuaria(
                 nombre = self.ent_nombre.get(),
                 edad = edad_calculada,
-                telefono = self.ent_telefono.get(),
+                telefono = telefono_ingresado,
                 fecha_nacimiento = fecha_nac_str,
                 lugar_nacimiento = self.ent_lugar.get(),
                 escolaridad_id = self._texto_a_id(self.escolaridades_list, "escolaridad", self.opt_escolaridad.get(), "id_escolaridad"),
