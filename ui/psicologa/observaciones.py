@@ -32,10 +32,10 @@ class ObservacionesView(ctk.CTkFrame):
 
         self.tabla_header = ctk.CTkFrame(self.card_frame, fg_color="#7A1B6C", corner_radius=8, height=40)
         self.tabla_header.grid(row=1, column=0, padx=(20, 35), pady=(0, 5), sticky="ew")
-        self.tabla_header.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
+        self.tabla_header.grid_columnconfigure(list(range(4)), weight=1, uniform="col")
         self.tabla_header.pack_propagate(False)
         
-        columnas = ["Nombre", "Fecha", "Telefono", "Hora", "Estatus", "Editar"]
+        columnas = ["Nombre", "Telefono", "Estatus", "Editar"]
         for i, col in enumerate(columnas):
             lbl = ctk.CTkLabel(self.tabla_header, text=col, text_color="white", font=("Arial", 14, "bold"), anchor="center")
             lbl.grid(row=0, column=i, pady=10, sticky="ew")
@@ -63,26 +63,51 @@ class ObservacionesView(ctk.CTkFrame):
             widget.destroy()
 
         datos_ejemplo = service_obtener_citas_usuarias()
+        
+        # Diccionario para almacenar la cita más reciente por usuaria
+        citas_mas_recientes = {}
 
         for fila in datos_ejemplo:
-            if fila[4] == "Programada" or fila[4] == "Atendida":
-                row_frame = ctk.CTkFrame(self.scroll_tabla, fg_color="white", border_width=1, border_color="#E0E0E0", corner_radius=6, height=40)
-                row_frame.pack(fill="x", pady=3, padx=5)
-                row_frame.grid_columnconfigure(list(range(6)), weight=1, uniform="col")
-                row_frame.grid_propagate(False)
-
-                for i in range(5):
-                    color_texto = "#32CD32" if fila[4] == "Programada" and i == 4 else "black"
-                    texto_celda = self.fecha_a_texto(fila[i]) if i == 1 else str(fila[i])
-                    
-                    if i == 0 and len(texto_celda) > 18:
-                        texto_celda = texto_celda[:15] + "..."
-                        
-                    lbl_dato = ctk.CTkLabel(row_frame, text=texto_celda, text_color=color_texto, font=("Arial", 13), anchor="center")
-                    lbl_dato.grid(row=0, column=i, pady=8, sticky="ew")
+            if fila[4] in ("Programada", "Atendida"):
+                nombre_usuaria = fila[0]
+                fecha_str = fila[1]
                 
-                btn_editar = ctk.CTkButton(row_frame, text="Editar Observaciones", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, command=lambda f=fila: self.abrir_modal(f))
-                btn_editar.grid(row=0, column=5, pady=8)
+                # Transformamos la fecha a formato de tiempo para poder compararla matemáticamente
+                fecha_cita = datetime.strptime(fecha_str, "%Y-%m-%d")
+                
+                # Si la usuaria no está en el registro, o si esta cita tiene una fecha mayor (es más nueva)
+                if nombre_usuaria not in citas_mas_recientes:
+                    citas_mas_recientes[nombre_usuaria] = (fila, fecha_cita)
+                else:
+                    fecha_guardada = citas_mas_recientes[nombre_usuaria][1]
+                    if fecha_cita > fecha_guardada:
+                        citas_mas_recientes[nombre_usuaria] = (fila, fecha_cita)
+
+        # Dibujamos la tabla utilizando únicamente los datos ya filtrados por fecha reciente
+        for data in citas_mas_recientes.values():
+            fila_reciente = data[0]
+            
+            row_frame = ctk.CTkFrame(self.scroll_tabla, fg_color="white", border_width=1, border_color="#E0E0E0", corner_radius=6, height=40)
+            row_frame.pack(fill="x", pady=3, padx=5)
+            
+            row_frame.grid_columnconfigure(list(range(4)), weight=1, uniform="col")
+            row_frame.grid_propagate(False)
+
+            # 0=Nombre, 2=Teléfono, 4=Estatus
+            indices_a_mostrar = [0, 2, 4] 
+
+            for col_visual, index_datos in enumerate(indices_a_mostrar):
+                color_texto = "#32CD32" if index_datos == 4 and fila_reciente[4] == "Programada" else "black"
+                texto_celda = str(fila_reciente[index_datos])
+                
+                if index_datos == 0 and len(texto_celda) > 18:
+                    texto_celda = texto_celda[:15] + "..."
+                    
+                lbl_dato = ctk.CTkLabel(row_frame, text=texto_celda, text_color=color_texto, font=("Arial", 13), anchor="center")
+                lbl_dato.grid(row=0, column=col_visual, pady=8, sticky="ew")
+            
+            btn_editar = ctk.CTkButton(row_frame, text="Editar Observaciones", width=30, height=24, fg_color="#7A1B6C", hover_color="#E55B2B", text_color="white", corner_radius=5, command=lambda f=fila_reciente: self.abrir_modal(f))
+            btn_editar.grid(row=0, column=3, pady=8)
             
     def abrir_modal(self, fila):
         nombre_usuaria = fila[0]
