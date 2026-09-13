@@ -7,9 +7,18 @@ import shutil
 import customtkinter as ctk
 from ui.main_window import MainWindow
 
+# Directorio base de la aplicación
+if getattr(sys, "frozen", False):
+    # Producción: carpeta donde se encuentra main.exe
+    BASE_DIR = Path(sys.executable).parent
+else:
+    # Desarrollo: raíz del proyecto
+    BASE_DIR = Path(__file__).resolve().parent
+
 # Ruta al servidor WhatsApp
-WHATSAPP_SERVER_PATH = Path(__file__).parent / "integrations" / "whatsapp-server"
-BASE_DIR = Path(__file__).parent
+WHATSAPP_SERVER_PATH = BASE_DIR / "integrations" / "whatsapp-server"
+
+# Archivo principal del servidor WhatsApp
 SERVER_ENTRY = WHATSAPP_SERVER_PATH / "src" / "index.js"
 
 
@@ -27,8 +36,8 @@ def obtener_node():
 
 def iniciar_servidor_whatsapp() -> subprocess.Popen | None:
     """
-    Lanza `npm start` en la carpeta del servidor WhatsApp como proceso hijo.
-    Devuelve el proceso para poder terminarlo al cerrar la app.
+    Lanza el servidor WhatsApp utilizando Node.js.
+    En producción utiliza el Node.js embebido en runtime/.
     """
     if not WHATSAPP_SERVER_PATH.exists():
         print(f"[WhatsApp] Advertencia: no se encontró el servidor en {WHATSAPP_SERVER_PATH}")
@@ -42,7 +51,7 @@ def iniciar_servidor_whatsapp() -> subprocess.Popen | None:
                 str(SERVER_ENTRY)
             ],
             cwd=WHATSAPP_SERVER_PATH,
-            shell=(sys.platform == "win32"),
+            shell=False,
             # Redirigir salida
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -56,7 +65,7 @@ def iniciar_servidor_whatsapp() -> subprocess.Popen | None:
         hilo.start()
         return proceso
     except FileNotFoundError:
-        print("[WhatsApp] Error: npm no encontrado. Asegúrate de que Node.js esté instalado.")
+        print("[WhatsApp] Error: Node no encontrado. Asegúrate de que Node.js esté instalado.")
         return None
     except Exception as e:
         print(f"[WhatsApp] Error al iniciar el servidor: {e}")
