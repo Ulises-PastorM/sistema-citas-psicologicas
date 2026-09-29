@@ -45,6 +45,11 @@ def iniciar_servidor_whatsapp() -> subprocess.Popen | None:
 
     try:
         NODE = obtener_node()
+        creationflags = 0
+
+        if sys.platform == "win32":
+            creationflags = subprocess.CREATE_NO_WINDOW
+        
         proceso = subprocess.Popen(
             [
                 str(NODE),
@@ -58,6 +63,7 @@ def iniciar_servidor_whatsapp() -> subprocess.Popen | None:
             text=True,
             encoding="utf-8",
             bufsize=1,
+            creationflags=creationflags,
         )
         print(f"[WhatsApp] Servidor iniciado (PID: {proceso.pid})")
         # Leer el pipe en un hilo daemon para no bloquear Node.js

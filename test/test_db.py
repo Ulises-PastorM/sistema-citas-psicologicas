@@ -41,7 +41,7 @@ from models.cita_model import Cita
 # Agrega 1 psicologa
 for i in range(1):
     nueva_psicologa = Psicologa(
-        nombre="Nayeli Cabrera",
+        nombre="IMMujer Psicología",
         especialidad="Violencia",
         horario="10:00-14:00",
         activa=1,
@@ -76,7 +76,7 @@ for i in range(1):
 
 
 # Ingresa un usuario admin
-resultado = service_crear_usuario("admin", "123456", 1)
+resultado = service_crear_usuario("immujer", "123456", 1)
 print(resultado)
 
 if resultado["success"]:

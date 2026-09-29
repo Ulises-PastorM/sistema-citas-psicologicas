@@ -8,6 +8,7 @@ from services.sesiones_services import (
     service_crear_sesion,
     service_actualizar_sesion
 )
+from utils.tarea_inicio_dia import ejecutar_tarea_inicio_dia
 
 class ObservacionesView(ctk.CTkFrame):
     def __init__(self, master):
@@ -43,7 +44,7 @@ class ObservacionesView(ctk.CTkFrame):
         self.scroll_tabla = ctk.CTkScrollableFrame(self.card_frame, fg_color="transparent")
         self.scroll_tabla.grid(row=2, column=0, padx=15, pady=(0, 20), sticky="nsew")
         self.refrescar_tabla()
-                
+        ejecutar_tarea_inicio_dia()
     
     def fecha_a_texto(self, fecha_str: str) -> str:
         meses = [

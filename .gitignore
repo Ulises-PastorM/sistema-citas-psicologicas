@@ -16,3 +16,4 @@ venv/
 /build
 /dist
 /utils/__pycache__
+/integrations/whatsapp-server/chrome

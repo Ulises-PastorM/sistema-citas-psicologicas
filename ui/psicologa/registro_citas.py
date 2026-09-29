@@ -16,13 +16,10 @@ from models.cita_model import Cita
 from repositories.catalogos_repository import (
     obtener_estados_cita
 )
-from utils.tarea_inicio_dia import ejecutar_tarea_inicio_dia
 
 class RegistroCitas(ctk.CTkFrame):
     def __init__(self, master, on_actualizar=None):
         super().__init__(master, fg_color="#F4F4F4")
-        print("Entra a init...")
-        ejecutar_tarea_inicio_dia()
         self.on_actualizar = on_actualizar
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
