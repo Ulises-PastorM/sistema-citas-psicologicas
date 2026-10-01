@@ -1,6 +1,8 @@
 import threading
 import io
 import requests
+import tkinter as tk
+
 from PIL import Image
 import customtkinter as ctk
 from services.whatsapp_services import obtener_estado_servidor
@@ -14,7 +16,10 @@ class MiCuentaView(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self._qr_polling = False   # controla el loop de refresco del QR
+        self._vista_activa = True
+
+        # Cada nuevo ciclo de polling obtiene un ID diferente.
+        self._qr_polling_id = 0
 
         # ─── Header ──────────────────────────────────────────────────────────
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -102,75 +107,201 @@ class MiCuentaView(ctk.CTkFrame):
         )
         self.btn_refrescar.pack(pady=(5, 20))
 
-        # ─── Iniciar verificación al cargar la vista ──────────────────────────
-        threading.Thread(target=self._ciclo_qr, daemon=True).start()
+        # Iniciar verificación al cargar la vista
+        self._iniciar_ciclo_qr()
+
 
     # ─── Lógica del QR ────────────────────────────────────────────────────────
 
-    def _ciclo_qr(self):
-        """
-        Loop que verifica el estado de WhatsApp cada 20s.
-        - Si está conectado: muestra ícono de éxito y detiene el polling.
-        - Si hay QR disponible: descarga y muestra la imagen.
-        - Si el servidor no responde: muestra error.
-        """
-        self._qr_polling = True
+    def _iniciar_ciclo_qr(self):
+        """Inicia un nuevo ciclo de verificación de WhatsApp."""
+        if not self._vista_activa:
+            return
 
-        while self._qr_polling:
+        self._qr_polling_id += 1
+        ciclo_id = self._qr_polling_id
+
+        threading.Thread(
+            target=self._ciclo_qr,
+            args=(ciclo_id,),
+            daemon=True
+        ).start()
+
+
+    def _programar_ui(self, callback):
+        """
+        Programa una actualización de interfaz únicamente si
+        esta vista sigue existiendo.
+        """
+        if not self._vista_activa:
+            return
+
+        try:
+            self.after(0, lambda: self._ejecutar_ui(callback))
+        except (tk.TclError, RuntimeError):
+            pass
+
+
+    def _ejecutar_ui(self, callback):
+        """Ejecuta de forma segura un callback sobre la interfaz."""
+        if not self._vista_activa:
+            return
+
+        try:
+            if not self.winfo_exists():
+                return
+
+            callback()
+
+        except tk.TclError:
+            # La vista o alguno de sus widgets fue destruido
+            # mientras el callback estaba esperando.
+            pass
+
+
+    def destroy(self):
+        """
+        Detiene cualquier tarea asociada a esta vista antes
+        de destruir los widgets.
+        """
+        self._vista_activa = False
+
+        # Invalida cualquier ciclo de polling que siga ejecutándose.
+        self._qr_polling_id += 1
+
+        super().destroy()
+
+
+    def _ciclo_qr(self, ciclo_id):
+        """
+        Loop que verifica el estado de WhatsApp cada 10s.
+
+        Cada ciclo tiene un ID. Si se inicia un ciclo nuevo o la vista
+        se destruye, el ciclo anterior termina automáticamente.
+        """
+
+        import time
+
+        while (
+            self._vista_activa
+            and ciclo_id == self._qr_polling_id
+        ):
             estado = obtener_estado_servidor()
+
+            # Puede haberse cerrado sesión mientras esperaba la respuesta HTTP.
+            if (
+                not self._vista_activa
+                or ciclo_id != self._qr_polling_id
+            ):
+                return
+
             status = estado.get("status")
 
             if status == "connected":
                 info = estado.get("client", {})
                 numero = info.get("number", "") if info else ""
-                self.after(0, lambda n=numero: self._mostrar_conectado(n))
-                self._qr_polling = False
-                break
+
+                self._programar_ui(
+                    lambda n=numero: self._mostrar_conectado(n)
+                )
+
+                return
 
             elif status == "qr_ready":
-                self.after(0, lambda: self.lbl_estado_wa.configure(
-                    text="📱 Escanea el QR para vincular WhatsApp",
-                    text_color="#E09000"
-                ))
-                self._descargar_y_mostrar_qr()
+                self._programar_ui(
+                    lambda: self.lbl_estado_wa.configure(
+                        text="📱 Escanea el QR para vincular WhatsApp",
+                        text_color="#E09000"
+                    )
+                )
+
+                self._descargar_y_mostrar_qr(ciclo_id)
 
             elif status == "error":
-                self.after(0, lambda: self._mostrar_error("Servidor no disponible"))
-                self._qr_polling = False
-                break
+                self._programar_ui(
+                    lambda: self._mostrar_error(
+                        "Servidor no disponible"
+                    )
+                )
+
+                return
 
             else:
-                # disconnected o qr aún no listo
-                self.after(0, lambda: self.lbl_estado_wa.configure(
-                    text="⏳ Esperando al servidor...",
-                    text_color="#888888"
-                ))
-                self.after(0, lambda: self.lbl_qr.configure(text="Cargando...", image=None))
+                # disconnected o QR todavía no listo
+                self._programar_ui(
+                    lambda: self.lbl_estado_wa.configure(
+                        text="⏳ Esperando al servidor...",
+                        text_color="#888888"
+                    )
+                )
 
-            # Esperar ~20s antes del siguiente check (tiempo de vida de un QR)
-            import time
+                self._programar_ui(
+                    lambda: self.lbl_qr.configure(
+                        text="Cargando...",
+                        image=None
+                    )
+                )
+
+            # Esperar antes de la siguiente consulta.
             time.sleep(10)
 
-    def _descargar_y_mostrar_qr(self):
+
+    def _descargar_y_mostrar_qr(self, ciclo_id):
         """Descarga la imagen PNG del QR y la muestra en el label."""
+
+        if (
+            not self._vista_activa
+            or ciclo_id != self._qr_polling_id
+        ):
+            return
+
         try:
-            response = requests.get(f"{WHATSAPP_SERVER_URL}/qr", timeout=10)
+            response = requests.get(
+                f"{WHATSAPP_SERVER_URL}/qr",
+                timeout=10
+            )
 
-            if response.status_code == 200 and response.headers.get("Content-Type") == "image/png":
+            # Comprobar nuevamente después de la petición HTTP.
+            if (
+                not self._vista_activa
+                or ciclo_id != self._qr_polling_id
+            ):
+                return
+
+            if (
+                response.status_code == 200
+                and response.headers.get("Content-Type") == "image/png"
+            ):
                 img_bytes = response.content
-                img = Image.open(io.BytesIO(img_bytes)).resize((200, 200))
-                ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(200, 200))
 
-                # Actualizar UI desde el hilo principal
-                self.after(0, lambda i=ctk_img: self._actualizar_imagen_qr(i))
+                img = Image.open(
+                    io.BytesIO(img_bytes)
+                ).resize((200, 200))
+
+                ctk_img = ctk.CTkImage(
+                    light_image=img,
+                    dark_image=img,
+                    size=(200, 200)
+                )
+
+                self._programar_ui(
+                    lambda i=ctk_img: self._actualizar_imagen_qr(i)
+                )
 
             elif response.status_code == 200:
                 # Responde JSON: sesión ya activa
-                data = response.json()
-                self.after(0, lambda: self._mostrar_conectado(""))
+                self._programar_ui(
+                    lambda: self._mostrar_conectado("")
+                )
 
         except Exception as e:
-            self.after(0, lambda: self._mostrar_error(f"Error al obtener QR: {e}"))
+            detalle = str(e)
+
+            self._programar_ui(
+                lambda d=detalle: self._mostrar_error(
+                    f"Error al obtener QR: {d}"
+                )
+            )
 
     def _actualizar_imagen_qr(self, ctk_img):
         self.lbl_qr.configure(image=ctk_img, text="")
@@ -194,17 +325,45 @@ class MiCuentaView(ctk.CTkFrame):
         self.lbl_estado_wa.configure(text=f"🔴 {detalle}", text_color="#CC4400")
         self.lbl_qr.configure(text="Sin conexión\nal servidor", image=None, text_color="#CC4400")
 
+
     def _refrescar_manual(self):
         """Permite al usuario forzar una nueva verificación."""
-        self._qr_polling = False   # detener el loop anterior
-        self.lbl_estado_wa.configure(text="🔄 Verificando...", text_color="#888888")
-        self.lbl_qr.configure(text="Cargando...", image=None, text_color="gray")
+
+        if not self._vista_activa:
+            return
+
+        # Invalida inmediatamente el ciclo anterior.
+        self._qr_polling_id += 1
+
+        self.lbl_estado_wa.configure(
+            text="🔄 Verificando...",
+            text_color="#888888"
+        )
+
+        self.lbl_qr.configure(
+            text="Cargando...",
+            image=None,
+            text_color="gray"
+        )
+
         self.btn_refrescar.configure(state="disabled")
 
         def _reanudar():
             import time
             time.sleep(0.5)
-            self.after(0, lambda: self.btn_refrescar.configure(state="normal"))
-            self._ciclo_qr()
 
-        threading.Thread(target=_reanudar, daemon=True).start()
+            if not self._vista_activa:
+                return
+
+            self._programar_ui(
+                lambda: self.btn_refrescar.configure(
+                    state="normal"
+                )
+            )
+
+            self._iniciar_ciclo_qr()
+
+        threading.Thread(
+            target=_reanudar,
+            daemon=True
+        ).start()
