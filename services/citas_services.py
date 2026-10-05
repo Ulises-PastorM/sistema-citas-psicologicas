@@ -8,6 +8,7 @@ from repositories.citas_repository import (
     obtener_citas_por_psicologa,
     actualizar_cita,
     eliminar_cita,
+    verificar_cita,
 )
 from services.usuarias_services import service_obtener_usuaria_basico
 from repositories.catalogos_repository import (
@@ -76,6 +77,16 @@ def service_obtener_citas_por_psicologa(psicologa_id: int) -> list[Cita]:
     except Exception as e:
         print(f"[citas_service] Error al obtener citas de psicóloga {psicologa_id}: {e}")
         return []
+
+
+def service_verificar_cita(fecha_cita: str, hora_cita: str) -> Cita | None:
+    if not fecha_cita or not hora_cita:
+        return None
+    try:
+        return verificar_cita(fecha_cita, hora_cita)
+    except Exception as e:
+        print(f"[citas_service] Error al verificar la fecha {fecha_cita} - {hora_cita}: {e}")
+        return None
 
 
 def service_actualizar_cita(cita: Cita) -> dict:

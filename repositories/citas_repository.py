@@ -96,6 +96,22 @@ def obtener_citas_por_psicologa(psicologa_id: int) -> list[Cita]:
     return [Cita.from_dict(dict(row)) for row in resultados]
 
 
+def verificar_cita(fecha_cita: str, hora_cita: str) -> Cita | None:
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM citas WHERE fecha = ? AND hora = ?",
+        (fecha_cita, hora_cita)
+    )
+
+    resultado = cursor.fetchone()
+    conn.close()
+
+    return Cita.from_dict(dict(resultado)) if resultado else None
+
+
 def actualizar_cita(cita: Cita) -> int:
     """Actualiza una cita existente usando el id_cita del objeto. Devuelve filas afectadas."""
     conn = get_connection()

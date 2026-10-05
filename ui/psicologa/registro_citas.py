@@ -1,7 +1,12 @@
 import customtkinter as ctk
 from datetime import datetime, date, timedelta
 from tkinter import messagebox
-from services.citas_services import service_obtener_citas_usuarias, service_crear_cita, service_actualizar_cita, service_obtener_cita_por_id
+from services.citas_services import (
+    service_obtener_citas_usuarias,
+    service_crear_cita, service_actualizar_cita,
+    service_obtener_cita_por_id,
+    service_verificar_cita
+)
 from services.usuarias_services import (
     service_obtener_usuarias,
     service_obtener_usuaria_por_telefono,
@@ -149,6 +154,14 @@ class RegistroCitas(ctk.CTkFrame):
             confirmacion_i = messagebox.askyesno("Usuaria con inasistencias", f"La usuaria {datos_usuaria[0]} cuenta con 3 o más inasistencias ¿Desea continuar?")
             if not confirmacion_i:
                 return
+
+        #Verificar si ya existe una cita en la fecha y hora seleccionadas
+        resultado_verificar = service_verificar_cita(fecha_cita, hora_cita)
+        if resultado_verificar:
+            #Ya hay una cita con la fecha y hora seleccionadas
+            print(resultado_verificar)
+            messagebox.showwarning("Cita existente", f"Hay una cita en la fecha y hora seleccionadas. Por favor seleccione otra fecha u hora.")
+            return
 
         nueva_cita = Cita(
             fecha=fecha_cita,
