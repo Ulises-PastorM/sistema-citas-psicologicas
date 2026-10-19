@@ -185,6 +185,12 @@ CREATE TABLE IF NOT EXISTS usuarias_inasistencias (
 		REFERENCES usuarias("id_usuaria")
 );
 
+CREATE TABLE IF NOT EXISTS configuracion (
+    clave TEXT NOT NULL PRIMARY KEY,
+    valor TEXT NOT NULL DEFAULT ''
+);
+
+
 -- CATÁLOGOS
 
 -- domicilio_estatus
@@ -253,3 +259,7 @@ INSERT OR IGNORE INTO dependencias (dependencia) VALUES
 ('Juzgado familiar'),
 ('Hospital'),
 ('Otra');
+
+-- claves de uso
+INSERT OR IGNORE INTO configuracion (clave, valor) VALUES
+('dia_envio_recordatorio', '');

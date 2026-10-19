@@ -5,6 +5,15 @@ from services.citas_services import service_obtener_citas_programadas, service_a
 from services.usuarias_services import service_obtener_usuaria_por_id
 from services.whatsapp_services import obtener_estado_servidor, enviar_mensaje_a_usuaria
 from services.notificaciones_services import service_registrar_envio_whatsapp
+from threading import Lock
+
+from repositories.catalogos_repository import (
+    obtener_configuracion_por_clave,
+    actualizar_configuracion,
+)
+
+
+_bloqueo_tarea = Lock()
 
 # Estado IDs
 ESTADO_PROGRAMADA = 1
@@ -23,7 +32,7 @@ def _dia_siguiente_habil(hoy: date) -> date:
         return hoy + timedelta(days=1)
 
 
-def ejecutar_tarea_inicio_dia() -> dict:
+def _procesar_tarea_inicio_dia() -> dict:
     """
     Ejecutar al primer inicio de sesión del día.
 
@@ -117,3 +126,62 @@ def ejecutar_tarea_inicio_dia() -> dict:
 
     print(f"[TareaInicio] Resumen: {resumen}")
     return resumen
+
+def ejecutar_tarea_inicio_dia() -> dict:
+    resumen = {
+        "atendidas": 0,
+        "recordatorios_enviados": 0,
+        "recordatorios_fallidos": 0,
+        "errores": [],
+        "omitida": False,
+    }
+
+    # Evita dos ejecuciones simultáneas dentro de la aplicación.
+    if not _bloqueo_tarea.acquire(blocking=False):
+        resumen["omitida"] = True
+        return resumen
+
+    try:
+        hoy = date.today().isoformat()
+
+        configuracion = obtener_configuracion_por_clave(
+            "dia_envio_recordatorio"
+        )
+
+        if configuracion is None:
+            raise RuntimeError(
+                "No existe la clave dia_envio_recordatorio."
+            )
+
+        if configuracion.valor == hoy:
+            resumen["omitida"] = True
+            print("[TareaInicio] La tarea ya fue iniciada hoy.")
+            return resumen
+
+        estado = obtener_estado_servidor()
+
+        if estado.get("status") != "connected":
+            resumen["omitida"] = True
+            print("[TareaInicio] WhatsApp todavía no está conectado.")
+            return resumen
+
+        # Registrar el inicio antes de enviar para evitar repetir el lote.
+        filas = actualizar_configuracion(
+            "dia_envio_recordatorio",
+            hoy
+        )
+
+        if filas != 1:
+            raise RuntimeError(
+                "No se pudo registrar el día de envío."
+            )
+
+        return _procesar_tarea_inicio_dia()
+
+    except Exception as e:
+        resumen["errores"].append(str(e))
+        print(f"[TareaInicio] Error: {e}")
+        return resumen
+
+    finally:
+        _bloqueo_tarea.release()

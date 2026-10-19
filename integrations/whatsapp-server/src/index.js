@@ -6,6 +6,7 @@ const qrcode = require('qrcode');
 const qrcodeTerminal = require('qrcode-terminal');
 const { execSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const PORT = process.env.PORT || 3000;
 
@@ -15,6 +16,16 @@ console.log('[WhatsApp] Node:', process.execPath);
 
 const SESSION_PATH = path.resolve('./sessions');
 console.log('[WhatsApp] SESSION_PATH:', SESSION_PATH);
+
+const CHROME_PATH = path.join(
+  __dirname,
+  '..',
+  'chrome',
+  'chrome-win64',
+  'chrome.exe'
+);
+console.log('[WhatsApp] Chrome embebido:', CHROME_PATH);
+console.log('[WhatsApp] Chrome existe:', fs.existsSync(CHROME_PATH));
 
 const app  = express();
 app.use(express.json());
@@ -37,6 +48,7 @@ const CLIENT_OPTS = {
   }),
   puppeteer: {
     headless: true,
+    executablePath: CHROME_PATH,
     args: [
       '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage',
       '--disable-accelerated-2d-canvas', '--no-first-run', '--no-zygote', '--disable-gpu',

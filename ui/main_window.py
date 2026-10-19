@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from tkinter import filedialog, messagebox
 from PIL import Image  
 from ui.components.sidebar import Sidebar
 from ui.components.header import Header
@@ -10,6 +11,13 @@ from ui.psicologa.observaciones import ObservacionesView
 from ui.psicologa.mi_cuenta import MiCuentaView
 import ctypes
 from utils.resource_path import resource_path
+from services.sesiones_services import (
+    service_exportar_observaciones_excel
+)
+from repositories.catalogos_repository import (
+    obtener_configuracion_por_clave,
+    actualizar_configuracion
+)
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -66,7 +74,7 @@ class MainWindow(ctk.CTk):
         self.main_container.grid_rowconfigure(1, weight=1)
         self.main_container.grid_columnconfigure(0, weight=1)
 
-        self.header = Header(self.main_container, comando_logout=self.cerrar_sesion)
+        self.header = Header(self.main_container, comando_logout=self.cerrar_sesion, comando_generar_csv=self.generar_excel)
         self.header.grid(row=0, column=0, sticky="ew")
 
         self.vistas_frame = ctk.CTkFrame(self.main_container, fg_color="transparent")
@@ -126,3 +134,53 @@ class MainWindow(ctk.CTk):
         if hasattr(self.vista_registro, 'refrescar_tabla'):
             self.vista_registro.refrescar_tabla()
             self.vista_registro.refrescar_usuarias()
+
+    #def generar_csv(self):
+    #    print("Estamos dentro de generar_csv\n")
+    #    historial = service_obtener_historial_observaciones()
+    #    for h in historial:
+    #        print(f"{h[0]}:")
+    #        print(h[1])
+
+    def generar_excel(self):
+        configuracion = obtener_configuracion_por_clave(
+            "dia_envio_recordatorio"
+        )
+
+        if configuracion is not None:
+            print(configuracion.valor)
+
+        filas = actualizar_configuracion(
+            "dia_envio_recordatorio",
+            "2026-10-06"
+        )
+
+        if filas == 0:
+            print("No existe la clave indicada.")
+        
+        ruta = filedialog.asksaveasfilename(
+            parent=self,
+            title="Guardar historial de observaciones",
+            defaultextension=".xlsx",
+            filetypes=[("Archivo de Excel", "*.xlsx")],
+            initialfile="historial_observaciones.xlsx"
+        )
+
+        if not ruta:
+            return  # Se canceló el diálogo.
+
+        resultado = service_exportar_observaciones_excel(ruta)
+
+        if resultado["success"]:
+            messagebox.showinfo(
+                "Exportación completada",
+                f"Se exportaron {resultado['total']} historiales.\n\n"
+                f"Archivo: {resultado['ruta']}",
+                parent=self
+            )
+        else:
+            messagebox.showerror(
+                "No se pudo exportar",
+                resultado["error"],
+                parent=self
+            )

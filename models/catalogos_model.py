@@ -198,3 +198,28 @@ class Sexo:
 
     def __str__(self) -> str:
         return f"Sexo(id={self.id_sexo}, sexo='{self.sexo}')"
+
+
+@dataclass
+class Configuracion:
+    clave: str
+    valor: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "clave": self.clave,
+            "valor": self.valor,
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> "Configuracion":
+        return Configuracion(
+            clave=data.get("clave", ""),
+            valor=data.get("valor", ""),
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"Configuracion(clave='{self.clave}', "
+            f"valor='{self.valor}')"
+        )

@@ -9,6 +9,7 @@ from models.catalogos_model import (
     Rol,
     ServicioImmujer,
     Sexo,
+    Configuracion,
 )
 
 
@@ -165,3 +166,42 @@ def obtener_sexo_por_id(id_sexo: int) -> Sexo | None:
         (id_sexo,)
     )
     return Sexo.from_dict(row) if row else None
+
+
+# ─── Configuración ────────────────────────────────────────────────────────────
+
+def obtener_configuraciones() -> list[Configuracion]:
+    rows = _fetchall(
+        "SELECT clave, valor FROM configuracion ORDER BY clave"
+    )
+    return [Configuracion.from_dict(r) for r in rows]
+
+
+def obtener_configuracion_por_clave(
+    clave: str
+) -> Configuracion | None:
+    row = _fetchone(
+        "SELECT clave, valor FROM configuracion WHERE clave = ?",
+        (clave,)
+    )
+    return Configuracion.from_dict(row) if row else None
+
+
+def actualizar_configuracion(clave: str, valor: str) -> int:
+    """Actualiza el valor de una clave y devuelve las filas afectadas."""
+    conn = get_connection()
+
+    try:
+        enable_foreign_keys(conn)
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE configuracion SET valor = ? WHERE clave = ?",
+            (valor, clave)
+        )
+        conn.commit()
+        return cursor.rowcount
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()

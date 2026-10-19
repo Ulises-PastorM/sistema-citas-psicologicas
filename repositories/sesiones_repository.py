@@ -1,5 +1,6 @@
 from database.connection import get_connection, enable_foreign_keys
 from models.sesion_model import Sesion
+from models.usuaria_observacion_model import Usuaria_Observacion
 
 
 def crear_sesion(sesion: Sesion) -> int:
@@ -64,6 +65,26 @@ def obtener_sesiones_por_cita(cita_id: int) -> list[Sesion]:
     conn.close()
 
     return [Sesion.from_dict(dict(row)) for row in resultados]
+
+
+def obtener_historial_observaciones() -> list[Usuaria_Observacion]:
+    """Devuelve todas observaciones de las sesiones junto a su fecha, hora y usuaria asociadas."""
+    conn = get_connection()
+    enable_foreign_keys(conn)
+
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT u.id_usuaria, u.nombre, s.fecha_sesion, c.hora AS hora_cita, s.observaciones
+        FROM sesiones as s
+        JOIN citas AS c ON c.id_cita = s.cita_id
+        JOIN usuarias AS u ON u.id_usuaria = c.usuaria_id
+        ORDER BY u.nombre, u.id_usuaria, s.fecha_sesion ASC
+    """)
+
+    resultados = cursor.fetchall()
+    conn.close()
+
+    return [Usuaria_Observacion.from_dict(dict(row)) for row in resultados]
 
 
 def actualizar_sesion(sesion: Sesion) -> int:

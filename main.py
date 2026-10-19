@@ -6,6 +6,8 @@ import shutil
 
 import customtkinter as ctk
 from ui.main_window import MainWindow
+from services.whatsapp_services import obtener_estado_servidor
+from utils.tarea_inicio_dia import ejecutar_tarea_inicio_dia
 
 # Directorio base de la aplicación
 if getattr(sys, "frozen", False):
@@ -106,14 +108,41 @@ def _leer_salida(proceso: subprocess.Popen) -> None:
         # El pipe se cerró al terminar el proceso — es normal
         pass
 
+def esperar_whatsapp_y_ejecutar(detener: threading.Event) -> None:
+    while not detener.is_set():
+        try:
+            estado = obtener_estado_servidor()
+
+            if estado.get("status") == "connected":
+                if detener.is_set():
+                    return
+
+                resumen = ejecutar_tarea_inicio_dia()
+                print(f"[TareaInicio] Resultado: {resumen}")
+                return
+
+        except Exception as e:
+            print(f"[TareaInicio] Esperando WhatsApp: {e}")
+
+        # Espera interrumpible; no bloquea la interfaz.
+        detener.wait(5)
+
 # Entry point
 if __name__ == "__main__":
     servidor = iniciar_servidor_whatsapp()
-
     app = MainWindow()
 
-    # Registrar el cierre del servidor cuando se cierre la ventana
+    detener_tarea = threading.Event()
+
+    if servidor is not None:
+        threading.Thread(
+            target=esperar_whatsapp_y_ejecutar,
+            args=(detener_tarea,),
+            daemon=True,
+        ).start()
+
     def al_cerrar():
+        detener_tarea.set()
         detener_servidor_whatsapp(servidor)
         app.destroy()
 
